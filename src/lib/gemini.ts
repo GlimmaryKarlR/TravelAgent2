@@ -1,7 +1,18 @@
 import { GoogleGenAI } from "@google/genai";
 import { Message } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAiClient() {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "undefined") {
+      throw new Error("GEMINI_API_KEY_MISSING");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 const SYSTEM_PROMPT = `You are "Aura", the elite AI travel concierge for "Nomad Elite". 
 You are sophisticated, knowledgeable, and proactive. 
@@ -19,6 +30,7 @@ Keep responses well-structured using Markdown.`;
 
 export async function chatWithAura(messages: Message[]) {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: messages.map(m => ({
@@ -31,8 +43,11 @@ export async function chatWithAura(messages: Message[]) {
     });
 
     return response.text || "I apologize, but I am unable to process that request right now. How else can I assist your journey?";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Error:", error);
+    if (error.message === "GEMINI_API_KEY_MISSING") {
+      return "### AI Concierge Offline\n\nI am unable to connect to the Nomad Elite intelligence network because the **GEMINI_API_KEY** environment variable is missing or invalid. \n\nIf you are viewing this on **Vercel** or **GitHub**, please ensure you have added the `GEMINI_API_KEY` to your environment variables or secrets.";
+    }
     return "The Nomad Elite network is experiencing minor turbulence. Please try again or visit the Emergency Hub for immediate assistance.";
   }
 }
