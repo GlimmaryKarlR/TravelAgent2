@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark, Sparkles } from 'lucide-react';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { ItineraryItem } from '../types';
@@ -90,6 +91,20 @@ export default function ItineraryHub() {
                 <p className="text-[11px] text-white/40 font-medium">{latestTrip.destination}</p>
               </div>
             </div>
+
+            {latestTrip.intelligenceReport && (
+              <div className="relative pl-10 pb-8 group">
+                <div className="absolute left-0 top-0 w-7 h-7 rounded-lg flex items-center justify-center border bg-blue-500/10 border-blue-500/40 text-blue-400">
+                  <Sparkles size={14} />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold font-mono text-blue-400 tracking-wider">Aura Briefing</span>
+                  <div className="p-4 glass-panel border-white/5! text-[11px] text-white/80 leading-relaxed markdown-body">
+                    <ReactMarkdown>{latestTrip.intelligenceReport}</ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="relative pl-10 pb-8 group">
               <div className="absolute left-0 top-0 w-7 h-7 rounded-lg flex items-center justify-center border bg-white/5 border-white/10 text-white/30">

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles } from 'lucide-react';
+import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
+import { chatWithAura } from '../lib/gemini';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -14,29 +15,29 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
   const [data, setData] = useState({
     destination: '',
     accommodation: '',
-    activity: ''
+    activity: '',
+    dates: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
 
   const handleNext = () => {
-    if (step < 3) setStep(step + 1);
+    if (step < 4) setStep(step + 1);
     else handleSubmit();
   };
 
   const statuses = [
-    "Synchronizing with global travel grid...",
-    "Verifying elite access to private landmarks...",
-    "Validating secure accommodation protocols...",
+    "Scanning global flight corridors...",
+    "Verifying private villa availability...",
+    "Checking diplomatic clearance for landmarks...",
     "Securing biometric vault signatures...",
-    "Optimizing route for maximum privacy..."
+    "Optimizing for carbon-neutral transport..."
   ];
 
   const handleSubmit = async () => {
     if (!auth.currentUser) return;
     setIsLoading(true);
     
-    // Rotation of status messages
     let i = 0;
     const statusInterval = setInterval(() => {
       setLoadingStatus(statuses[i % statuses.length]);
@@ -44,17 +45,25 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
     }, 1200);
 
     try {
+      // Use Aura to synthesize the "Intelligence Report"
+      const prompt = `Plan a travel briefing for a user going to ${data.destination} staying at ${data.accommodation} wanting to do ${data.activity} during ${data.dates}. 
+      Include 2 optimal flight options (suggested) and 1 local secret. Keep it concise.`;
+      
+      const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
+      const intelligenceReport = await chatWithAura(messages);
+
       const tripData = {
         userId: auth.currentUser.uid,
         destination: data.destination,
         accommodation: data.accommodation,
         activities: [data.activity],
-        status: 'planning',
+        dates: data.dates,
+        intelligenceReport, // Simulated agent results
+        status: 'active',
         createdAt: serverTimestamp()
       };
       
-      const path = 'trips';
-      await addDoc(collection(db, path), tripData);
+      await addDoc(collection(db, 'trips'), tripData);
       clearInterval(statusInterval);
       onComplete();
     } catch (error) {
@@ -67,8 +76,9 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
 
   const steps = [
     { title: "Where to?", icon: Plane, key: 'destination', placeholder: 'Tokyo, Paris, Mars...' },
-    { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Boutique Hotel, Airbnb, Aman...' },
-    { title: "What to do?", icon: Activity, key: 'activity', placeholder: 'Hidden tempels, Private dining...' },
+    { title: "When to travel?", icon: Clock, key: 'dates', placeholder: 'Summer 2026, Dec 12-20...' },
+    { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Boutique Hotel, Aman, Private Villa...' },
+    { title: "What to do?", icon: Activity, key: 'activity', placeholder: 'Architecture tour, Hidden dining...' },
   ];
 
   const current = steps[step - 1];
@@ -83,7 +93,7 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
       <header className="p-8 flex justify-between items-center relative z-10">
         <button onClick={onCancel} className="text-[10px] uppercase font-bold text-white/40 tracking-widest hover:text-white transition-colors">Cancel</button>
         <div className="flex gap-2">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className={`h-1 w-6 rounded-full transition-all duration-500 ${i <= step ? 'bg-gold' : 'bg-white/10'}`} />
           ))}
         </div>
@@ -119,7 +129,7 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
                 disabled={!(data as any)[current.key] || isLoading}
                 className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-20"
               >
-                {isLoading ? 'Booking Intelligence...' : step === 3 ? 'Finalize Itinerary' : 'Next Protocol'}
+                {isLoading ? 'Booking Intelligence...' : step === 4 ? 'Finalize Itinerary' : 'Next Protocol'}
                 {!isLoading && <ChevronRight size={16} />}
               </button>
             </div>
