@@ -4,12 +4,15 @@ import { Globe, Sparkles, LogIn } from 'lucide-react';
 import { signInWithPopup, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 import { auth, googleProvider, appleProvider } from '../lib/firebase';
 
-export default function Login() {
+export default function Login({ onDemoLogin }: { onDemoLogin: () => void }) {
   const login = async (provider: any) => {
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
+      if (error.code === 'auth/unauthorized-domain') {
+        alert("Domain unauthorized in Firebase. Please use 'Demo Access' for now or add this domain to your Firebase Console.");
+      }
     }
   };
 
@@ -49,6 +52,15 @@ export default function Login() {
             <LogIn size={18} />
             Continue with Apple
           </button>
+
+          <div className="pt-4">
+            <button 
+              onClick={onDemoLogin}
+              className="text-[10px] uppercase font-bold text-gold/60 tracking-widest hover:text-gold transition-colors border-b border-gold/20 pb-0.5"
+            >
+              Enter via Demo Protocol (Bypass)
+            </button>
+          </div>
         </div>
 
         <p className="text-[10px] text-white/30 uppercase tracking-[0.1em] leading-relaxed">

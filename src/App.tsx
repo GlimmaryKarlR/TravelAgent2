@@ -13,12 +13,21 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('concierge');
   const [tier, setTier] = useState<'basic' | 'elite'>('elite');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
+
+  const handleDemoLogin = () => {
+    setUser({
+      uid: 'demo-user-123',
+      displayName: 'Elite Traveler',
+      photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+      email: 'elite@nomad.com'
+    });
+  };
 
   useEffect(() => {
     const handleOnboarding = () => setShowOnboarding(true);
@@ -28,7 +37,7 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+      if (u) setUser(u);
       setAuthLoading(false);
     });
     return () => unsubscribe();
@@ -56,7 +65,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <Login />;
+    return <Login onDemoLogin={handleDemoLogin} />;
   }
 
   if (showOnboarding) {
