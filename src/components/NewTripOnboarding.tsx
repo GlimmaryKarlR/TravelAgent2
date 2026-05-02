@@ -17,15 +17,32 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
     activity: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState('');
 
   const handleNext = () => {
     if (step < 3) setStep(step + 1);
     else handleSubmit();
   };
 
+  const statuses = [
+    "Synchronizing with global travel grid...",
+    "Verifying elite access to private landmarks...",
+    "Validating secure accommodation protocols...",
+    "Securing biometric vault signatures...",
+    "Optimizing route for maximum privacy..."
+  ];
+
   const handleSubmit = async () => {
     if (!auth.currentUser) return;
     setIsLoading(true);
+    
+    // Rotation of status messages
+    let i = 0;
+    const statusInterval = setInterval(() => {
+      setLoadingStatus(statuses[i % statuses.length]);
+      i++;
+    }, 1200);
+
     try {
       const tripData = {
         userId: auth.currentUser.uid,
@@ -38,8 +55,10 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
       
       const path = 'trips';
       await addDoc(collection(db, path), tripData);
+      clearInterval(statusInterval);
       onComplete();
     } catch (error) {
+      clearInterval(statusInterval);
       handleFirestoreError(error, OperationType.CREATE, 'trips');
     } finally {
       setIsLoading(false);
@@ -109,9 +128,21 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
       </main>
 
       <footer className="p-8 text-center relative z-10">
-        <div className="flex items-center justify-center gap-2 text-gold/60">
-          <Sparkles size={12} />
-          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Aura AI is calculating your optimal route</span>
+        <div className="flex flex-col items-center justify-center gap-3">
+          {isLoading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-2 text-gold font-mono text-[9px] uppercase tracking-widest bg-gold/10 px-4 py-2 rounded-full border border-gold/20"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" />
+              {loadingStatus || 'Aura is calculating your optimal route...'}
+            </motion.div>
+          )}
+          <div className="flex items-center gap-2 text-white/30">
+            <Sparkles size={12} />
+            <span className="text-[10px] uppercase font-bold tracking-[0.2em]">{isLoading ? 'Synthesizing Expedition' : 'Aura AI Intelligence Ready'}</span>
+          </div>
         </div>
       </footer>
     </div>

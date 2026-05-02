@@ -15,7 +15,7 @@ type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault';
 export default function App() {
   const [user, setUser] = useState<User | any>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>('concierge');
+  const [activeTab, setActiveTab] = useState<Tab>('itinerary');
   const [tier, setTier] = useState<'basic' | 'elite'>('elite');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
@@ -81,8 +81,8 @@ export default function App() {
   }
 
   const tabs = [
-    { id: 'concierge', label: 'Aura', icon: Sparkles },
     { id: 'itinerary', label: 'Journey', icon: Map },
+    { id: 'concierge', label: 'Aura', icon: Sparkles },
     { id: 'safety', label: 'Safety', icon: Shield },
     { id: 'vault', label: 'Vault', icon: Globe },
   ];
