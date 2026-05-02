@@ -1,26 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Map, Shield, Globe, Menu, X } from 'lucide-react';
+import { Sparkles, Map, Shield, Globe, Menu, X, Plus } from 'lucide-react';
 import AuraConcierge from './components/AuraConcierge';
 import ItineraryHub from './components/ItineraryHub';
 import SafetyCenter from './components/SafetyCenter';
 import Vault from './components/Vault';
+import Login from './components/Login';
+import NewTripOnboarding from './components/NewTripOnboarding';
+import { auth, db } from './lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault';
 
 export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('concierge');
   const [tier, setTier] = useState<'basic' | 'elite'>('elite');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
 
-  // Dynamic Event Listener (Simulation)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAlertActive(true);
-    }, 5000); // Show a mock alert after 5s
-
-    return () => clearTimeout(timer);
+    const handleOnboarding = () => setShowOnboarding(true);
+    window.addEventListener('START_ONBOARDING', handleOnboarding);
+    return () => window.removeEventListener('START_ONBOARDING', handleOnboarding);
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Dynamic Alert (Simulation)
+  useEffect(() => {
+    if (user) {
+      const timer = setTimeout(() => {
+        setIsAlertActive(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  if (authLoading) {
+    return (
+      <div className="h-screen bg-dark flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Sparkles className="text-gold animate-pulse" size={32} />
+          <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/40">Synchronizing Vantage...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  if (showOnboarding) {
+    return (
+      <NewTripOnboarding 
+        onComplete={() => {
+          setShowOnboarding(false);
+          setActiveTab('itinerary');
+        }}
+        onCancel={() => setShowOnboarding(false)}
+      />
+    );
+  }
 
   const tabs = [
     { id: 'concierge', label: 'Aura', icon: Sparkles },
@@ -66,16 +115,19 @@ export default function App() {
           </div>
           <div className="h-8 w-[1px] bg-white/20 mx-2"></div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold opacity-40 uppercase tracking-wider">LHR - HND</span>
-            <span className="text-sm font-semibold tracking-tight">Higashiyama-ku, JP</span>
+            <span className="text-[10px] font-bold opacity-40 uppercase tracking-wider">Welcome</span>
+            <span className="text-sm font-semibold tracking-tight">{user.displayName?.split(' ')[0] || 'Traveler'}</span>
           </div>
         </div>
-        <div className="flex items-center gap-6">
-          <div className={`pill ${tier === 'elite' ? 'pill-elite' : 'bg-white/10 uppercase'}`}>
-            {tier === 'elite' ? 'Elite Tier' : 'Basic Member'}
-          </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setShowOnboarding(true)}
+            className="w-10 h-10 glass-panel flex items-center justify-center rounded-xl border-white/20! text-gold hover:bg-gold/10 transition-colors"
+          >
+            <Plus size={20} />
+          </button>
           <div className="w-10 h-10 glass-panel flex items-center justify-center rounded-full border-white/20!">
-            <div className="w-7 h-7 bg-gradient-to-tr from-gray-400 to-white rounded-full shadow-inner"></div>
+            <img src={user.photoURL || ''} alt="Profile" className="w-7 h-7 rounded-full shadow-inner" />
           </div>
         </div>
       </header>

@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Entity Validations
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.keys().size() >= 2 &&
+             data.uid is string &&
+             data.email is string &&
+             data.uid == request.auth.uid;
+    }
+
+    function isValidTrip(data) {
+      return data.keys().hasAll(['userId', 'destination']) &&
+             data.userId == request.auth.uid &&
+             data.destination is string && data.destination.size() <= 200;
+    }
+
+    function isValidBooking(data) {
+      return data.keys().hasAll(['tripId', 'type']) &&
+             data.tripId is string &&
+             data.type in ['flight', 'hotel', 'airbnb', 'vrbo', 'activity'];
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'tier']);
+    }
+
+    // 2. Trips Collection
+    match /trips/{tripId} {
+      allow create: if isEmailVerified() && isValidTrip(request.resource.data);
+      allow get, list: if isOwner(resource.data.userId);
+      allow update: if isOwner(resource.data.userId) && isValidTrip(request.resource.data) &&
+                      request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(resource.data.userId);
+
+      // 3. Bookings Subcollection (Master Gate pattern)
+      match /bookings/{bookingId} {
+        allow create: if isEmailVerified() && isValidBooking(request.resource.data) &&
+                        get(/databases/$(database)/documents/trips/$(request.resource.data.tripId)).data.userId == request.auth.uid;
+        allow get, list: if isSignedIn() && get(/databases/$(database)/documents/trips/$(tripId)).data.userId == request.auth.uid;
+        allow update, delete: if isSignedIn() && get(/databases/$(database)/documents/trips/$(tripId)).data.userId == request.auth.uid;
+      }
+    }
+  }
+}

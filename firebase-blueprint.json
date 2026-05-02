@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Premium member profile containing identity and preference data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "tier": { "type": "string", "enum": ["basic", "elite"] },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Trip": {
+      "title": "Travel Itinerary",
+      "description": "A single planned or active trip with associated bookings",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "destination": { "type": "string" },
+        "accommodation": { "type": "string" },
+        "activities": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["planning", "active", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "destination"]
+    },
+    "Booking": {
+      "title": "Service Booking",
+      "description": "Specific airline, hotel, or activity booking details",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string" },
+        "type": { "type": "string", "enum": ["flight", "hotel", "airbnb", "vrbo", "activity"] },
+        "provider": { "type": "string" },
+        "details": { "type": "string" },
+        "status": { "type": "string" },
+        "cost": { "type": "number" }
+      },
+      "required": ["tripId", "type"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Global user directory"
+    },
+    "/trips/{tripId}": {
+      "schema": "Trip",
+      "description": "User trips"
+    },
+    "/trips/{tripId}/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Specific bookings within a trip"
+    }
+  }
+}
