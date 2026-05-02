@@ -1,0 +1,6 @@
+{
+  "name": "Nomad Elite",
+  "description": "A premium AI travel concierge and safety officer for elite global travelers.",
+  "requestFramePermissions": ["geolocation", "microphone"],
+  "majorCapabilities": ["AI Travel Planning", "Emergency Support", "Live Translation"]
+}

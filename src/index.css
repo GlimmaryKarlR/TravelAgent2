@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-gold: #D4AF37;
+  --color-gold-bright: #F9E29C;
+  --color-dark: #05070A;
+  --color-accent-blue: #2E5BFF;
+}
+
+@layer base {
+  body {
+    @apply bg-dark text-white font-sans antialiased overflow-hidden selection:bg-gold selection:text-dark;
+  }
+}
+
+/* Frosted Glass Patterns */
+.glass-panel {
+  @apply bg-white/10 backdrop-blur-[20px] border border-white/10 rounded-[24px];
+}
+
+.glass-card {
+  @apply bg-white/5 backdrop-blur-[15px] border border-white/10 rounded-2xl;
+}
+
+.elite-glow {
+  @apply shadow-[0_0_20px_rgba(212,175,55,0.2)] border-gold/40!;
+}
+
+/* Mesh Background Elements */
+.mesh-bg {
+  @apply absolute inset-0 z-[-1] overflow-hidden bg-[#05070A];
+  background: radial-gradient(circle at 10% 20%, rgba(20, 30, 48, 1) 0%, rgba(36, 59, 85, 1) 100%);
+}
+
+.accent-sphere {
+  @apply absolute rounded-full blur-[80px] opacity-40;
+}
+
+.sphere-1 {
+  @apply w-[400px] h-[400px] -top-[100px] -left-[100px] bg-accent-blue;
+}
+
+.sphere-2 {
+  @apply w-[500px] h-[500px] -bottom-[200px] -right-[100px] bg-gold;
+}
+
+/* Pill Styling */
+.pill {
+  @apply px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-widest inline-flex items-center gap-1.5;
+}
+
+.pill-elite {
+  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-bright));
+  @apply text-dark;
+}
+
+.pill-safe {
+  @apply bg-green-500/20 text-green-400 border border-green-500/30;
+}
+
+.markdown-body {
+  @apply space-y-4 text-sm leading-relaxed text-white/80 font-light;
+}
+
+.markdown-body h1, .markdown-body h2 {
+  @apply font-serif italic text-white text-xl mt-6 mb-2 tracking-tight;
+}
+
+.markdown-body strong {
+  @apply text-gold font-semibold;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
