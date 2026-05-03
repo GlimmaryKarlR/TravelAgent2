@@ -69,9 +69,14 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         "tours": [
           { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2-3 tags for the activity (e.g., 'yacht,ocean' or 'helicopter,mountain')" }
         ],
+        "schedule": [
+          { "time": "09:00", "activity": "Morning Coffee at Secret Terrace", "status": "booked", "type": "dining" },
+          { "time": "11:30", "activity": "Private Museum After-Hours", "status": "proposed", "type": "tour" },
+          { "time": "14:00", "activity": "Helicopter Transfer to Coast", "status": "booked", "type": "flight" }
+        ],
         "localSecret": "One high-end local hidden gem"
       }
-      Provide 3 options for each category. Keep image tags simple and comma-separated to ensure high-quality matching.`;
+      Provide 3 options for each categories (flights, hotels, tours). For the schedule, provide a 2-day sample timeline with at least 4-5 items per day. Keep image tags simple and comma-separated to ensure high-quality matching.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);

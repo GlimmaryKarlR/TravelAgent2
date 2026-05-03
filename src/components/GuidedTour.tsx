@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Navigation, Mic, MicOff, Volume2, VolumeX, X, Play, Pause, ChevronRight, GpsFixed, Sparkles, Compass } from 'lucide-react';
+import { MapPin, Navigation, Mic, MicOff, Volume2, VolumeX, X, Play, Pause, ChevronRight, LocateFixed, Sparkles, Compass } from 'lucide-react';
 
 interface PointOfInterest {
   id: string;

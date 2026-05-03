@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Map, Shield, Globe, Menu, X, Plus, Lock } from 'lucide-react';
+import { Sparkles, Map, Shield, Globe, Menu, X, Plus, Lock, CalendarDays } from 'lucide-react';
 import AuraConcierge from './components/AuraConcierge';
 import ItineraryHub from './components/ItineraryHub';
+import ScheduleView from './components/ScheduleView';
 import SafetyCenter from './components/SafetyCenter';
 import Vault from './components/Vault';
 import Discovery from './components/Discovery';
@@ -11,7 +12,7 @@ import NewTripOnboarding from './components/NewTripOnboarding';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
-type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault' | 'discovery';
+type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault' | 'discovery' | 'schedule';
 
 export default function App() {
   const [user, setUser] = useState<User | any>(null);
@@ -101,6 +102,7 @@ export default function App() {
   const tabs = [
     { id: 'discovery', label: 'Explore', icon: Globe },
     { id: 'itinerary', label: 'Journey', icon: Map },
+    { id: 'schedule', label: 'Schedule', icon: CalendarDays },
     { id: 'concierge', label: 'Aura', icon: Sparkles },
     { id: 'safety', label: 'Safety', icon: Shield },
     { id: 'vault', label: 'Vault', icon: Lock },
@@ -175,6 +177,7 @@ export default function App() {
               {activeTab === 'discovery' && <Discovery />}
               {activeTab === 'concierge' && <AuraConcierge tier={tier} />}
               {activeTab === 'itinerary' && <ItineraryHub demoTrips={demoTrips} />}
+              {activeTab === 'schedule' && <ScheduleView demoTrips={demoTrips} />}
               {activeTab === 'safety' && <SafetyCenter />}
               {activeTab === 'vault' && <Vault tier={tier} setTier={setTier} />}
             </motion.div>
