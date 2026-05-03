@@ -174,9 +174,9 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
 
             <div className="space-y-8">
               {current.type === 'destination' ? (
-                <div className="space-y-10">
+                <div className="space-y-10 flex flex-col items-center">
                   <Globe onSelect={handleGlobeSelect} />
-                  <div className="relative group">
+                  <div className="w-full space-y-6">
                     <input 
                       autoFocus
                       value={data.destination}
@@ -184,12 +184,12 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                       placeholder={current.placeholder}
                       className="w-full bg-transparent border-b-2 border-white/10 py-4 text-2xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5 uppercase tracking-widest"
                     />
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 flex gap-2">
+                    <div className="flex flex-wrap justify-center gap-2">
                       {['Tokyo', 'Paris', 'New York', 'Dubai', 'Sydney'].map(city => (
                         <button 
                           key={city}
                           onClick={() => setData({...data, destination: city})}
-                          className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] uppercase font-black tracking-widest text-white/40 hover:text-gold hover:border-gold/30 transition-all"
+                          className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[9px] uppercase font-black tracking-widest text-white/40 hover:text-gold hover:border-gold/30 hover:bg-gold/5 transition-all"
                         >
                           {city}
                         </button>
@@ -198,10 +198,12 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                   </div>
                 </div>
               ) : current.type === 'dates' ? (
-                <LuxuryCalendar onSelect={handleCalendarSelect} onOpenDates={handleOpenDates} />
+                <div className="flex justify-center">
+                  <LuxuryCalendar onSelect={handleCalendarSelect} onOpenDates={handleOpenDates} />
+                </div>
               ) : current.type === 'budget' ? (
                 <div className="flex flex-col items-center gap-8">
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap justify-center gap-4">
                     {[1, 2, 3, 4, 5].map(val => (
                       <button
                         key={val}
