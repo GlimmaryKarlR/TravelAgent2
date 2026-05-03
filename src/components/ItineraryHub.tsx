@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark, Sparkles } from 'lucide-react';
+import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark, Sparkles, Calendar, ChevronRight, Navigation } from 'lucide-react';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { ItineraryItem } from '../types';
+import GuidedTour from './GuidedTour';
 
 export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) {
   const [trips, setTrips] = useState<any[]>(demoTrips);
@@ -60,9 +61,22 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
 
   const intelligence = latestTrip?.intelligenceReport ? parseIntelligence(latestTrip.intelligenceReport) : null;
   const [bookingStatus, setBookingStatus] = useState<Record<string, string>>({});
+  const [refiningBooking, setRefiningBooking] = useState<{ id: string, type: 'flight' | 'hotel' | 'tour', data: any } | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [showTour, setShowTour] = useState(false);
+
+  const startBooking = (id: string, type: 'flight' | 'hotel' | 'tour', data: any) => {
+    // If trip dates are generic, ask for refinement
+    if (!latestTrip.dates || latestTrip.dates.includes('Aura') || latestTrip.dates.includes('Active')) {
+      setRefiningBooking({ id, type, data });
+      return;
+    }
+    handleBooking(id);
+  };
 
   const handleBooking = (id: string) => {
     setBookingStatus(prev => ({ ...prev, [id]: 'authorizing' }));
+    setRefiningBooking(null);
     setTimeout(() => {
       setBookingStatus(prev => ({ ...prev, [id]: 'confirmed' }));
     }, 2000);
@@ -87,6 +101,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   };
 
   return (
+    <>
     <div className="p-0 h-full overflow-y-auto no-scrollbar pb-32">
       {latestTrip ? (
         <>
@@ -131,7 +146,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                         </div>
                         <div className="flex gap-2">
                           <button 
-                            onClick={() => handleBooking(`flight-${i}`)}
+                            onClick={() => startBooking(`flight-${i}`, 'flight', f)}
                             className="flex-1 py-2 rounded-lg bg-gold/10 text-gold text-[9px] uppercase font-bold tracking-widest border border-gold/20 hover:bg-gold/20"
                           >
                             {bookingStatus[`flight-${i}`] === 'confirmed' ? 'Secured' : bookingStatus[`flight-${i}`] === 'authorizing' ? 'Verifying...' : 'Authorize AI'}
@@ -168,7 +183,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                         <p className="text-[9px] text-white/20 font-mono">{h.details}</p>
                         <div className="pt-4 flex gap-3">
                           <button 
-                            onClick={() => handleBooking(`hotel-${i}`)}
+                            onClick={() => startBooking(`hotel-${i}`, 'hotel', h)}
                             className="flex-1 md:flex-none px-6 py-3 bg-white text-dark rounded-xl text-[10px] font-black uppercase tracking-widest"
                           >
                             {bookingStatus[`hotel-${i}`] === 'confirmed' ? 'Reservation Active' : 'AI Direct Booking'}
@@ -200,12 +215,23 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                         <div className="p-4 space-y-3">
                           <h4 className="text-xs font-bold leading-tight line-clamp-1">{t.name}</h4>
                           <p className="text-[9px] text-white/40">{t.contact}</p>
-                          <button 
-                            onClick={() => handleBooking(`tour-${i}`)}
-                            className="w-full py-2 bg-gold/5 border border-gold/20 text-gold text-[8px] font-bold uppercase tracking-widest rounded-lg transition-colors hover:bg-gold/10"
-                          >
-                            {bookingStatus[`tour-${i}`] === 'confirmed' ? 'Requested' : 'Reserve Access'}
-                          </button>
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => startBooking(`tour-${i}`, 'tour', t)}
+                              className="flex-1 py-2 bg-gold/5 border border-gold/20 text-gold text-[8px] font-bold uppercase tracking-widest rounded-lg transition-colors hover:bg-gold/10"
+                            >
+                              {bookingStatus[`tour-${i}`] === 'confirmed' ? 'Requested' : 'Reserve Access'}
+                            </button>
+                            {bookingStatus[`tour-${i}`] === 'confirmed' && (
+                              <button 
+                                onClick={() => setShowTour(true)}
+                                className="px-3 py-2 bg-white text-dark rounded-lg flex items-center justify-center hover:bg-white/90"
+                                title="Guided GPS Tour"
+                              >
+                                <Navigation size={12} />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -267,5 +293,63 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
         </div>
       )}
     </div>
+    
+    {/* Refinement Modal */}
+    <AnimatePresence>
+      {refiningBooking && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-dark/80 backdrop-blur-md flex items-center justify-center p-6"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="glass-panel max-w-sm w-full p-8 space-y-8"
+          >
+            <div className="text-center space-y-2">
+              <Calendar size={32} className="mx-auto text-gold" />
+              <h3 className="text-xl font-serif italic">Synchronize Schedule</h3>
+              <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Select dates for your {refiningBooking.type}</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[9px] uppercase font-black text-white/20 tracking-widest px-2">Proposed Dates</label>
+                <input 
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-gold transition-colors text-white"
+                />
+              </div>
+              <p className="text-[9px] text-white/30 italic text-center leading-relaxed px-4">
+                "Aura will automatically scan for optimal inventory and handle all verification protocols."
+              </p>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button 
+                onClick={() => setRefiningBooking(null)}
+                className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10 rounded-xl"
+              >
+                Abort
+              </button>
+              <button 
+                onClick={() => handleBooking(refiningBooking.id)}
+                disabled={!selectedDate}
+                className="flex-1 py-4 bg-white text-dark text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/90 disabled:opacity-20"
+              >
+                Authorize
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {showTour && <GuidedTour onClose={() => setShowTour(false)} />}
+    </AnimatePresence>
+    </>
   );
 }
