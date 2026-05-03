@@ -51,6 +51,102 @@ export default function Vault({ tier, setTier }: { tier: 'basic' | 'elite', setT
         </button>
       </div>
 
+      {/* Tier Pricing Proposal */}
+      <div className="mb-12 space-y-6">
+        <div className="flex justify-between items-end px-1 mb-4">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Membership Protocols</h3>
+          <span className="text-[9px] text-gold font-bold uppercase tracking-widest border-b border-gold/30 pb-0.5">Annual Review</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Basic Tier */}
+          <motion.div 
+            whileHover={{ y: -2 }}
+            className={`glass-panel p-6 overflow-hidden relative ${tier === 'basic' ? 'border-white/40 ring-1 ring-white/10' : 'opacity-60 border-white/5!'}`}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h4 className="text-sm font-bold tracking-widest uppercase mb-1">Standard</h4>
+                <p className="text-[10px] text-white/40 italic">Complimentary Access</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold tracking-tighter">$0</p>
+                <p className="text-[8px] text-white/20 uppercase font-bold tracking-widest">Yearly</p>
+              </div>
+            </div>
+            
+            <ul className="space-y-3 mb-6">
+              {['Basic Trip Intelligence', 'Standard Concierge Support', 'Digital Asset Vault (5GB)', 'Public Event Access'].map((perk, i) => (
+                <li key={i} className="flex items-center gap-2 text-[10px] text-white/60">
+                  <div className="w-1 h-1 rounded-full bg-white/20" />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+            
+            {tier !== 'basic' && (
+              <button 
+                onClick={() => setTier('basic')}
+                className="w-full py-2 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                Downgrade Protocol
+              </button>
+            )}
+          </motion.div>
+
+          {/* Elite Tier */}
+          <motion.div 
+            whileHover={{ y: -2 }}
+            className={`glass-panel p-6 overflow-hidden relative border-gold/30 gold-glow bg-gold/5 ${tier === 'elite' ? 'ring-1 ring-gold/40 shadow-[0_0_30px_rgba(212,175,55,0.1)]' : 'opacity-60'}`}
+          >
+            {/* Elite Badge */}
+            <div className="absolute top-0 right-0 bg-gold px-3 py-1 text-dark text-[8px] font-black uppercase tracking-widest rounded-bl-xl shadow-lg">
+              Priority
+            </div>
+
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h4 className="text-sm font-bold tracking-widest uppercase mb-1 text-gold">Elite Protocol</h4>
+                <p className="text-[10px] text-gold/60 italic">AI-First Executive Suite</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold tracking-tighter text-gold">$2,500</p>
+                <p className="text-[8px] text-gold/40 uppercase font-bold tracking-widest">Yearly</p>
+              </div>
+            </div>
+            
+            <ul className="space-y-3 mb-6">
+              {[
+                'Full Aura AI Orchestration',
+                'Unlimited Global Concierge',
+                'Unlimited Vault Expansion',
+                'Invite-Only Expedition Access',
+                '24/7 Priority Field Support',
+                'Complimentary Private Lounge Sync'
+              ].map((perk, i) => (
+                <li key={i} className="flex items-center gap-2 text-[10px] text-gold/80">
+                  <Globe size={8} className="text-gold" />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+            
+            {tier !== 'elite' ? (
+              <button 
+                onClick={() => setTier('elite')}
+                className="w-full py-3 bg-gold text-dark rounded-xl text-[9px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition-all"
+              >
+                Finalize Upgrade
+              </button>
+            ) : (
+              <div className="w-full py-3 text-center text-gold/40 text-[8px] font-black uppercase tracking-[0.3em] italic">
+                Active Protocol
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </div>
+
       {/* Docs */}
       <div className="space-y-5">
         <div className="flex justify-between items-end mb-4 px-1">
