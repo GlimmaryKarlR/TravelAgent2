@@ -67,10 +67,10 @@ export default function Vault({ tier, setTier }: { tier: 'basic' | 'elite', setT
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h4 className="text-sm font-bold tracking-widest uppercase mb-1">Standard</h4>
-                <p className="text-[10px] text-white/40 italic">Complimentary Access</p>
+                <p className="text-[10px] text-white/40 italic">Standard Protocol</p>
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold tracking-tighter">$0</p>
+                <p className="text-xl font-bold tracking-tighter">$100</p>
                 <p className="text-[8px] text-white/20 uppercase font-bold tracking-widest">Yearly</p>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function Vault({ tier, setTier }: { tier: 'basic' | 'elite', setT
                 <p className="text-[10px] text-gold/60 italic">AI-First Executive Suite</p>
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold tracking-tighter text-gold">$2,500</p>
+                <p className="text-xl font-bold tracking-tighter text-gold">$400</p>
                 <p className="text-[8px] text-gold/40 uppercase font-bold tracking-widest">Yearly</p>
               </div>
             </div>
