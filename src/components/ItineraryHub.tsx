@@ -105,14 +105,12 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   }
 
   const getImageUrl = (keyword: string, width = 800, height = 800, random: string | number = 0) => {
-    // Keep only the first two tags and add a broad one
-    const rawTags = (keyword || 'luxury').split(',').map(t => t.trim().toLowerCase()).slice(0, 2);
-    const tags = [...rawTags, 'travel'].join(',');
-    
+    // Use the primary, most robust tag only
+    const primaryTag = (keyword || 'luxury').split(',')[0].trim().toLowerCase();
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
     const randomOffset = typeof random === 'number' ? random : random.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;
     
-    return `https://loremflickr.com/${width}/${height}/${tags}?lock=${seed + randomOffset}`;
+    return `https://loremflickr.com/${width}/${height}/${primaryTag}?lock=${seed + randomOffset}`;
   };
 
   return (

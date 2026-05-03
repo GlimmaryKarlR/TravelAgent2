@@ -45,12 +45,12 @@ export default function Discovery() {
   }, []);
 
   const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
-    // Keep only the first two tags provided by AI and add one quality tag
-    const rawTags = (keyword || 'luxury').split(',').map(t => t.trim().toLowerCase()).slice(0, 2);
-    const tags = [...rawTags, 'travel'].join(',');
-    
+    // Stick to the primary keyword to avoid "no match" fallbacks with multi-tag requirements
+    const primaryTag = (keyword || 'luxury').split(',')[0].trim().toLowerCase();
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
-    return `https://loremflickr.com/${width}/${height}/${tags}?lock=${seed + random}`;
+    
+    // Using simple tag matching (OR behavior) for maximum reliability as per docs
+    return `https://loremflickr.com/${width}/${height}/${primaryTag}?lock=${seed + random}`;
   };
 
   return (
