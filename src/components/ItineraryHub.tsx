@@ -106,7 +106,9 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
 
   const getImageUrl = (keyword: string, width = 800, height = 800, random: string | number = 0) => {
     // Priority: Specific tags first
-    const tags = (keyword || 'luxury,resort').split(',').map(t => t.trim().toLowerCase()).join(',');
+    const rawTags = (keyword || 'luxury,resort').split(',').map(t => t.trim().toLowerCase());
+    // Append general context tags
+    const tags = [...rawTags, 'luxury', 'exclusive', 'hotel'].join(',');
     // Generate a stable seed from keyword
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
     const randomOffset = typeof random === 'number' ? random : random.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;

@@ -10,17 +10,21 @@ export default function Discovery() {
   const fetchRecommendations = async () => {
     setIsLoading(true);
     try {
-      const prompt = `Act as Aura. Suggest 3 'Elite Expeditions' for ultra-high-net-worth travelers. 
-      The more remote, expensive, and breathtaking the better. Deep-sea hubs, orbital hotels, or private arctic estates.
+      const prompt = `Act as Aura, the elite concierge. Suggest 3 'Elite Expeditions' for ultra-high-net-worth travelers. 
+      Mix iconic high-end destinations with one 'Ultra-Lavish' outlier.
+      Destinations should be things like St. Barts, Courchevel, Maldives, Kyoto, or private islands in the Seychelles.
+      One option MUST be extreme (e.g., private orbital flight, super-yacht expedition to Antarctica).
+      Activities must be premium: private heli-skiing, yacht charters, Michelin-starred cliffside dining.
+      
       Return JSON:
       {
         "expeditions": [
           {
-            "title": "Short poetic title (e.g. 'The Lunar Drift')",
-            "destination": "Specific Location (e.g. 'Mare Tranquillitatis' or 'Bhutanese Sky Abbey')",
-            "vibe": "What makes it elite (e.g. 'Zero-gravity meditation' or 'Private monks' blessing')",
-            "cost": "Est. price like $2,500,000+",
-            "imageKeyword": "Provide 3-4 specific comma-separated tags for loremflickr like 'moon,space,nebula' or 'monastery,himalayas,snow'"
+            "title": "Short poetic title (e.g. 'The Azure Charter')",
+            "destination": "Specific Location (e.g. 'St. Barths' or 'Courchevel 1850')",
+            "vibe": "What makes it elite (e.g. 'Private villa with 24/7 staff' or 'Michelin dining on the slopes')",
+            "cost": "Est. price like $250,000+",
+            "imageKeyword": "Provide 2-3 BROAD, high-quality tags for image matching. Use simple terms like 'yacht,ocean', 'chalet,snow', 'mansion,tropical', 'private-jet'. AVOID niche or specific venue names."
           }
         ]
       }`;
@@ -41,7 +45,8 @@ export default function Discovery() {
   }, []);
 
   const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
-    const tags = (keyword || 'luxury,landscape').split(',').map(t => t.trim().toLowerCase()).join(',');
+    const rawTags = (keyword || 'luxury,resort').split(',').map(t => t.trim().toLowerCase());
+    const tags = [...rawTags, 'luxury', 'expensive'].join(',');
     // Stable seed based on keyword string to prevent repetitive fallbacks across sessions
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
     return `https://loremflickr.com/${width}/${height}/${tags}/all?lock=${seed + random}`;
@@ -52,9 +57,9 @@ export default function Discovery() {
       <div className="relative h-[60vh] flex items-end p-8 border-b border-white/10">
         <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent z-10" />
         <img 
-          src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?q=80&w=2000&auto=format&fit=crop" 
+          src="https://images.unsplash.com/photo-1544911845-1f34a3eb46b1?q=80&w=2000&auto=format&fit=crop" 
           alt="World Discovery" 
-          className="absolute inset-0 w-full h-full object-cover grayscale opacity-50"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
           referrerPolicy="no-referrer"
         />
         <div className="relative z-20 space-y-4 max-w-sm">

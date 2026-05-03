@@ -84,15 +84,15 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
         "briefing": "Concise welcome message",
-        "destinationImage": "2-3 simple descriptive tags (e.g., 'tokyo,skyline' or 'amalfi,coast')",
+        "destinationImage": "2-3 BROAD high-quality tags (e.g., 'tokyo,skyline' or 'amalfi,coast' or 'luxury,resort')",
         "flights": [
           { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "2-3 tags for hotel look (e.g., 'villa,pool' or 'modern,suite')" }
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "2-3 simple tags for architectural style (e.g., 'modern,pool' or 'palace,interior')" }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2-3 tags for the activity (e.g., 'yacht,ocean' or 'helicopter,mountain')" }
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2-3 simple tags for the activity (e.g., 'yacht,sunset' or 'helicopter,view')" }
         ],
         "schedule": [
           { 
@@ -105,7 +105,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         ],
         "localSecret": "One high-end local hidden gem"
       }
-      Provide 3 options for each category (flights, hotels, tours). Keep image tags simple and comma-separated to ensure high-quality matching.`;
+      Provide 3 options for each category (flights, hotels, tours). Keep image tags simple, BROAD, and comma-separated to ensure high-quality matching. AVOID specific venue names in keywords.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);
