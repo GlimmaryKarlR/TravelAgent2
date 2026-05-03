@@ -129,21 +129,38 @@ export default function ItineraryHub({
       schedule[0].items = day1Items;
     }
 
-    // Filter Experiences: Only show experiences that match selected IDs (or core logistics)
-    return schedule.map((day: any) => ({
+    // Filter Experiences and Final Load Balancing
+    const balanced = schedule.map((day: any) => ({
       ...day,
       items: day.items.filter((item: any) => {
         if (['flight', 'accommodation', 'dining', 'transit'].includes(item.type)) return true;
-        // Check if this activity matches one of the selected tours
         const isSelectedTour = intelligence.tours?.some((t: any, idx: number) => 
           selectedExperiences.includes(idx) && 
           (t.name.toLowerCase().includes(item.activity.toLowerCase()) || item.activity.toLowerCase().includes(t.name.toLowerCase()))
         );
-        // If no experiences are selected yet, show the proposed ones
         if (selectedExperiences.length === 0) return true;
         return isSelectedTour;
       })
     }));
+
+    // Post-Processing: Ensure no dead days
+    return balanced.map((day: any, idx: number) => {
+      if (day.items.length === 0) {
+        return {
+          ...day,
+          items: [{
+            time: "11:00",
+            activity: "Curated Leisure & Local Discovery",
+            location: intelligence.destination || "Vibrant District",
+            status: "proposed",
+            type: "activity",
+            personalizedNote: "We've left this window open for spontaneous discovery. Your concierge can arrange last-minute gallery access or private shopping.",
+            selectionReason: "Protocol: Rest and local integration is prioritized between exclusive events."
+          }]
+        };
+      }
+      return day;
+    });
   };
 
   const currentSchedule = getSynthesizedSchedule();
@@ -241,9 +258,20 @@ export default function ItineraryHub({
             <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
             <div className="absolute bottom-8 left-8">
               <h1 className="font-serif italic text-4xl font-bold mb-1 tracking-tight text-white">{latestTrip.destination}</h1>
-              <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">
-                {latestTrip.dates || 'Active Expedition'} • Status: {latestTrip.status}
-              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">
+                  {latestTrip.dates || 'Active Expedition'} • Status: {latestTrip.status}
+                </p>
+                {selectedPackage && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-gold/10 text-gold text-[7px] font-black uppercase tracking-widest border border-gold/20 backdrop-blur-md"
+                  >
+                    <Sparkles size={8} /> Spatial Optimization Active
+                  </motion.div>
+                )}
+              </div>
             </div>
           </div>
 

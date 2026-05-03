@@ -82,10 +82,12 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       Each item in the schedule MUST include geographic coordinates (latitude and longitude) for the ${data.destination} area.
       
       LOGIC REQUIREMENTS:
-      1. Time Management: Account for transit between every activity. Explicitly calculate travel time.
-      2. Optimization: Explain why each event is selected for that specific time (e.g., "sunset views" or "avoiding crowds").
-      3. Packages: Propose 2-3 "Luxury Packages" (Experience bundles) the user can choose from (e.g., "The Gastronomic Route", "The Adventure Protocol").
-      4. Personalization: Add tips for the user (e.g., "Get sleep on the plane as arrival is late").
+      1. Spatial-Temporal Optimization: Group activities geographically to minimize transit. Do NOT schedule events on opposite sides of the city on the same day.
+      2. Load Balancing: Evenly distribute activities across all ${dayCount} days. Avoid clustering 5 events on Day 1 and 0 on Day 2.
+      3. Timing Intelligence: Schedule events based on "Golden Hour" logic (e.g., deck sunrises, rooftop sunsets, museum low-traffic hours).
+      4. Transit-Aware: Explicitly calculate travel time between every venue. If an early morning excursion is chosen, the prior night's dining should be nearby.
+      5. Packages: Propose 2-3 "Luxury Packages" (Experience bundles) that the user can choose from (e.g., "The Gastronomic Route", "The Adventure Protocol").
+      6. Personalization: Add tips for the user (e.g., "Get sleep on the plane as arrival is late").
 
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
