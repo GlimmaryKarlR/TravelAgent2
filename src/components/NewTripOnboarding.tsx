@@ -286,7 +286,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                 disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
                 className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-98 hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-20 disabled:translate-y-0"
               >
-                {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next Protocol'}
+                {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next'}
                 {!isLoading && <ChevronRight size={16} />}
               </motion.button>
             )}

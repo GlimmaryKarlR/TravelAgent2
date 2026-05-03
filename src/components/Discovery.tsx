@@ -80,7 +80,7 @@ export default function Discovery() {
             onClick={() => (window as any).dispatchEvent(new CustomEvent('START_ONBOARDING'))}
             className="flex items-center gap-3 px-8 py-4 bg-white text-dark rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:scale-105 active:scale-95 transition-all shadow-2xl"
           >
-            Begin Protocol <ArrowRight size={14} />
+            Begin <ArrowRight size={14} />
           </button>
         </div>
       </div>

@@ -58,7 +58,7 @@ export default function Login({ onDemoLogin }: { onDemoLogin: () => void }) {
               onClick={onDemoLogin}
               className="text-[10px] uppercase font-bold text-gold/60 tracking-widest hover:text-gold transition-colors border-b border-gold/20 pb-0.5"
             >
-              Enter via Demo Protocol (Bypass)
+              Enter via Demo (Bypass)
             </button>
           </div>
         </div>
