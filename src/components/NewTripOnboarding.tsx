@@ -53,19 +53,19 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
         "briefing": "Concise welcome message",
-        "destinationImage": "3-4 specific tags for a vivid hero image of the destination (e.g., 'tokyo,shinjuku,night')",
+        "destinationImage": "2-3 simple descriptive tags (e.g., 'tokyo,skyline' or 'amalfi,coast')",
         "flights": [
           { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "3-4 tags for hotel architecture/interior (e.g., 'lobby,modern,marble')" }
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "2-3 tags for hotel look (e.g., 'villa,pool' or 'modern,suite')" }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "3-4 tags for this experience (e.g., 'helicopter,alps,sky')" }
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2-3 tags for the activity (e.g., 'yacht,ocean' or 'helicopter,mountain')" }
         ],
         "localSecret": "One high-end local hidden gem"
       }
-      Provide 3 options for each category. Ensure tags are highly descriptive and separated by commas.`;
+      Provide 3 options for each category. Keep image tags simple and comma-separated to ensure high-quality matching.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);

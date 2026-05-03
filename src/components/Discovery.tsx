@@ -41,8 +41,10 @@ export default function Discovery() {
   }, []);
 
   const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
-    const tags = (keyword || 'luxury,travel').replace(/\s+/g, ',').toLowerCase();
-    return `https://loremflickr.com/${width}/${height}/${tags}?random=${random}&lock=${Math.floor(Math.random() * 10000)}`;
+    const tags = (keyword || 'luxury,landscape').split(',').map(t => t.trim().toLowerCase()).join(',');
+    // Stable seed based on keyword string to prevent repetitive fallbacks across sessions
+    const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
+    return `https://loremflickr.com/${width}/${height}/${tags}/all?lock=${seed + random}`;
   };
 
   return (
