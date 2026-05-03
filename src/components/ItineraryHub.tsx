@@ -105,12 +105,17 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   }
 
   const getImageUrl = (keyword: string, width = 800, height = 800, random: string | number = 0) => {
-    // Use the primary, most robust tag only
-    const primaryTag = (keyword || 'luxury').split(',')[0].trim().toLowerCase();
+    // Clean and split keywords to ensure they are comma separated for LoremFlickr (OR behavior)
+    const tags = (keyword || 'luxury,resort')
+      .split(/[\s,]+/)
+      .filter(t => t.length > 0)
+      .map(t => t.trim().toLowerCase())
+      .join(',');
+    
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
     const randomOffset = typeof random === 'number' ? random : random.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;
     
-    return `https://loremflickr.com/${width}/${height}/${primaryTag}?lock=${seed + randomOffset}`;
+    return `https://loremflickr.com/${width}/${height}/${tags}?lock=${seed + randomOffset}`;
   };
 
   return (

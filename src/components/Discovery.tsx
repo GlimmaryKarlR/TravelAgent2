@@ -24,7 +24,7 @@ export default function Discovery() {
             "destination": "Specific Location (e.g. 'St. Barths' or 'Courchevel 1850')",
             "vibe": "What makes it elite (e.g. 'Private villa with 24/7 staff' or 'Michelin dining on the slopes')",
             "cost": "Est. price like $250,000+",
-            "imageKeyword": "Provide 1-2 BROAD, very common tags. Use ONLY simple words like 'yacht', 'resort', 'mountain', 'villa', 'tokyo', 'paris', 'snow', 'desert'. Do NOT use niche words like 'icebergs' or 'heli-skiing'."
+            "imageKeyword": "Provide 2-3 VERY BROAD, common tags. Use words like 'yacht,ocean', 'resort,pool', 'mountain,snow', 'villa,luxury', 'paris,city'. ALWAYS use commas between words."
           }
         ]
       }`;
@@ -45,12 +45,16 @@ export default function Discovery() {
   }, []);
 
   const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
-    // Stick to the primary keyword to avoid "no match" fallbacks with multi-tag requirements
-    const primaryTag = (keyword || 'luxury').split(',')[0].trim().toLowerCase();
+    // Clean and split keywords to ensure they are comma separated for LoremFlickr (OR behavior)
+    const tags = (keyword || 'luxury,resort')
+      .split(/[\s,]+/) // split by space or comma
+      .filter(t => t.length > 0)
+      .map(t => t.trim().toLowerCase())
+      .join(',');
+    
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
     
-    // Using simple tag matching (OR behavior) for maximum reliability as per docs
-    return `https://loremflickr.com/${width}/${height}/${primaryTag}?lock=${seed + random}`;
+    return `https://loremflickr.com/${width}/${height}/${tags}?lock=${seed + random}`;
   };
 
   return (

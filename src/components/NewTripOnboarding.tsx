@@ -84,15 +84,15 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
         "briefing": "Concise welcome message",
-        "destinationImage": "1 extremely BROAD high-quality tag (e.g., 'tokyo' or 'maldive' or 'resort').",
+        "destinationImage": "2-3 extremely BROAD high-quality tags separated by commas (e.g., 'tokyo,skyline' or 'island,resort').",
         "flights": [
           { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "1 extremely simple tag (e.g., 'pool' or 'palace')." }
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "2 simple tags separated by commas (e.g., 'pool,resort' or 'suite,luxury')." }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "1 extremely simple tag (e.g., 'yacht' or 'luxury')." }
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2 simple tags separated by commas (e.g., 'yacht,ocean' or 'helicopter,tour')." }
         ],
         "schedule": [
           { 
