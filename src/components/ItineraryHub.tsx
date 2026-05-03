@@ -76,13 +76,18 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
     );
   }
 
+  const getImageUrl = (keyword: string, width = 800, height = 800, random: string | number = 0) => {
+    const cleanKeyword = (keyword || '').replace(/\s+/g, ',');
+    return `https://loremflickr.com/${width}/${height}/${cleanKeyword}${cleanKeyword ? ',' : ''}luxury,travel?random=${random}`;
+  };
+
   return (
     <div className="p-0 h-full overflow-y-auto no-scrollbar pb-32">
       {latestTrip ? (
         <>
           <div className="relative h-64 md:h-80 w-full mb-8">
             <img 
-              src={`https://loremflickr.com/1600/900/${encodeURIComponent(intelligence?.destinationImage || latestTrip.destination || 'luxury,travel,resort')},vivid?random=hero`}
+              src={getImageUrl(intelligence?.destinationImage || latestTrip.destination || 'resort', 1600, 900, 'hero')}
               className="w-full h-full object-cover"
               alt={latestTrip.destination}
               referrerPolicy="no-referrer"
@@ -142,7 +147,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                     <div key={i} className="glass-panel overflow-hidden border-white/10! flex flex-col md:flex-row gap-0 items-stretch bg-gradient-to-r from-white/[0.02] to-transparent">
                       <div className="w-full md:w-1/3 h-48 md:h-auto relative">
                         <img 
-                          src={`https://loremflickr.com/800/800/${encodeURIComponent(h.imageKeyword || 'luxury,hotel,architecture')}?random=${i}`}
+                          src={getImageUrl(h.imageKeyword || 'luxury hotel', 800, 800, i)}
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                           alt={h.name}
                           referrerPolicy="no-referrer"
@@ -180,7 +185,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                       <div key={i} className="glass-panel overflow-hidden border-white/10! space-y-0 group bg-white/[0.02]">
                         <div className="h-40 overflow-hidden relative">
                           <img 
-                            src={`https://loremflickr.com/600/400/${encodeURIComponent(t.imageKeyword || 'luxury,experience')}?random=${i + 10}`}
+                            src={getImageUrl(t.imageKeyword || 'exclusive tour', 600, 400, i + 10)}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             alt={t.name}
                             referrerPolicy="no-referrer"

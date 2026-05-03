@@ -40,6 +40,11 @@ export default function Discovery() {
     fetchRecommendations();
   }, []);
 
+  const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
+    const cleanKeyword = (keyword || '').replace(/\s+/g, ',');
+    return `https://loremflickr.com/${width}/${height}/${cleanKeyword}${cleanKeyword ? ',' : ''}luxury,travel?random=${random}`;
+  };
+
   return (
     <div className="h-full overflow-y-auto no-scrollbar pb-32">
       <div className="relative h-[60vh] flex items-end p-8 border-b border-white/10">
@@ -95,7 +100,7 @@ export default function Discovery() {
                   className="group relative h-[500px] rounded-[2.5rem] overflow-hidden glass-panel border-white/10! shadow-2xl curse-pointer"
                 >
                   <img 
-                    src={`https://loremflickr.com/800/1000/${encodeURIComponent(exp.imageKeyword || exp.destination)},luxury,landscape?random=${i}`}
+                    src={getImageUrl(exp.imageKeyword || exp.destination, 800, 1000, i)}
                     alt={exp.destination}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     referrerPolicy="no-referrer"
