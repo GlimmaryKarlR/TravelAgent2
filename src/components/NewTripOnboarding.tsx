@@ -53,19 +53,19 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
         "briefing": "Concise welcome message",
-        "destinationImage": "Unsplash search keyword for a vivid hero image of the destination",
+        "destinationImage": "3-4 specific tags for a vivid hero image of the destination (e.g., 'tokyo,shinjuku,night')",
         "flights": [
           { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "Unsplash search keyword for hotel architecture/interior" }
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "3-4 tags for hotel architecture/interior (e.g., 'lobby,modern,marble')" }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "Unsplash search keyword for this specific experience" }
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "3-4 tags for this experience (e.g., 'helicopter,alps,sky')" }
         ],
         "localSecret": "One high-end local hidden gem"
       }
-      Provide 3 options for each category. Ensure keywords are specific like 'luxury hotel interior tokyo' or 'private yacht amalfi coast'.`;
+      Provide 3 options for each category. Ensure tags are highly descriptive and separated by commas.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);

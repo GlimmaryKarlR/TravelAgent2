@@ -20,7 +20,7 @@ export default function Discovery() {
             "destination": "Specific Location (e.g. 'Mare Tranquillitatis' or 'Bhutanese Sky Abbey')",
             "vibe": "What makes it elite (e.g. 'Zero-gravity meditation' or 'Private monks' blessing')",
             "cost": "Est. price like $2,500,000+",
-            "imageKeyword": "Unsplash keyword for vivid, ultra-luxury, or remote architecture/landscape"
+            "imageKeyword": "Provide 3-4 specific comma-separated tags for loremflickr like 'moon,space,nebula' or 'monastery,himalayas,snow'"
           }
         ]
       }`;
@@ -41,8 +41,8 @@ export default function Discovery() {
   }, []);
 
   const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
-    const cleanKeyword = (keyword || '').replace(/\s+/g, ',');
-    return `https://loremflickr.com/${width}/${height}/${cleanKeyword}${cleanKeyword ? ',' : ''}luxury,travel?random=${random}`;
+    const tags = (keyword || 'luxury,travel').replace(/\s+/g, ',').toLowerCase();
+    return `https://loremflickr.com/${width}/${height}/${tags}?random=${random}&lock=${Math.floor(Math.random() * 10000)}`;
   };
 
   return (

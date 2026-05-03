@@ -77,8 +77,10 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   }
 
   const getImageUrl = (keyword: string, width = 800, height = 800, random: string | number = 0) => {
-    const cleanKeyword = (keyword || '').replace(/\s+/g, ',');
-    return `https://loremflickr.com/${width}/${height}/${cleanKeyword}${cleanKeyword ? ',' : ''}luxury,travel?random=${random}`;
+    // Priority: Specific tags first, then luxury/travel context
+    const tags = (keyword || 'luxury,resort').replace(/\s+/g, ',').toLowerCase();
+    // Use a unique random seed to prevent caching the same image
+    return `https://loremflickr.com/${width}/${height}/${tags}?random=${random}&lock=${Math.floor(Math.random() * 10000)}`;
   };
 
   return (
