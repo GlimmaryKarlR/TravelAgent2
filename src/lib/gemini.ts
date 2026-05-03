@@ -31,8 +31,9 @@ Keep responses well-structured using Markdown.`;
 export async function chatWithAura(messages: Message[]) {
   try {
     const ai = getAiClient();
+    console.log("Aura Intelligence Model: gemini-1.5-flash");
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-1.5-flash",
       contents: messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
