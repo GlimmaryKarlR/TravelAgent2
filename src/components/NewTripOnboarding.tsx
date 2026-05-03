@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin, Banknote, DollarSign } from 'lucide-react';
+import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin, Banknote, DollarSign, Globe as GlobeIcon } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { chatWithAura } from '../lib/gemini';
+import Globe from './Globe';
+import LuxuryCalendar from './Calendar';
 
 interface OnboardingProps {
   user: any;
@@ -18,7 +20,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
     destination: initialData?.destination || '',
     accommodation: initialData?.title || '',
     activity: initialData?.vibe || '',
-    dates: 'Aura Premium Window',
+    dates: '',
     budget: 3
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -50,8 +52,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
     try {
       const budgetLabel = ["Budget-Conscious", "Comfort", "Premium", "Luxury", "Ultra-High-Net-Worth"][data.budget - 1];
       
-      // Use Aura to synthesize the "Intelligence Report"
-      const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates}).
+      const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates || 'Flexible Dates'}).
       Budget Tier: ${budgetLabel} (${data.budget}/5).
       Preferred Accommodation: ${data.accommodation}. 
       Interested in: ${data.activity}. 
@@ -86,23 +87,18 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         destination: data.destination,
         accommodation: data.accommodation,
         activities: [data.activity],
-        dates: data.dates,
+        dates: data.dates || 'Flexible Window',
         budget: data.budget,
-        intelligenceReport, // Simulated agent results
+        intelligenceReport, 
         status: 'active',
-        createdAt: new Date().toISOString() // Fallback string for demo
+        createdAt: new Date().toISOString()
       };
       
-      // Only attempt Firestore if we have a real Firebase session
       if (auth.currentUser) {
         await addDoc(collection(db, 'trips'), { 
           ...tripData, 
           createdAt: serverTimestamp() 
         });
-      } else {
-        // Mock delay for demo users to show the status messages
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        // We pass the tripData back to App to update local state if needed
       }
 
       clearInterval(statusInterval);
@@ -112,8 +108,8 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       if (auth.currentUser) {
         handleFirestoreError(error, OperationType.CREATE, 'trips');
       } else {
-        console.error("Demo submission failed:", error);
-        onComplete(); // Still complete even if Gemini fails in demo
+        console.error("Submission failed:", error);
+        onComplete();
       }
     } finally {
       setIsLoading(false);
@@ -121,49 +117,89 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
   };
 
   const steps = [
-    { title: "Where to?", icon: Plane, key: 'destination', placeholder: 'Tokyo, Paris, Mars...', type: 'text' },
+    { title: "Where to?", icon: GlobeIcon, key: 'destination', placeholder: 'Select via globe or type...', type: 'destination' },
     { title: "Spend Level", icon: Banknote, key: 'budget', type: 'budget' },
-    { title: "When to travel?", icon: Clock, key: 'dates', placeholder: 'Summer 2026, Dec 12-20...', type: 'text' },
-    { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Boutique Hotel, Aman, Private Villa...', type: 'text' },
-    { title: "What to do?", icon: Activity, key: 'activity', placeholder: 'Architecture tour, Hidden dining...', type: 'text' },
+    { title: "When to travel?", icon: Clock, key: 'dates', type: 'dates' },
+    { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Elite Boutique, Aman, Private Villa...', type: 'text' },
+    { title: "What to do?", icon: Activity, key: 'activity', placeholder: 'Artisan exploration, Hidden gastronomy...', type: 'text' },
   ];
 
   const current = steps[step - 1];
 
+  const handleGlobeSelect = (location: string) => {
+    setData(prev => ({ ...prev, destination: location }));
+  };
+
+  const handleCalendarSelect = (dates: string) => {
+    setData(prev => ({ ...prev, dates }));
+    handleNext();
+  };
+
+  const handleOpenDates = () => {
+    setData(prev => ({ ...prev, dates: 'Aura Flexible Strategy' }));
+    handleNext();
+  };
+
   return (
-    <div className="flex flex-col h-full bg-dark text-white relative">
+    <div className="flex flex-col h-full bg-dark text-white relative overflow-hidden">
       <div className="absolute inset-0 mesh-bg opacity-30">
          <div className="accent-sphere sphere-1" />
          <div className="accent-sphere sphere-2" />
       </div>
 
-      <header className="p-8 flex justify-between items-center relative z-10">
+      <header className="p-8 flex justify-between items-center relative z-20">
         <button onClick={onCancel} className="text-[10px] uppercase font-bold text-white/40 tracking-widest hover:text-white transition-colors">Cancel</button>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className={`h-1 w-6 rounded-full transition-all duration-500 ${i <= step ? 'bg-gold' : 'bg-white/10'}`} />
+            <div key={i} className={`h-1 w-6 rounded-full transition-all duration-500 ${i <= step ? 'bg-gold shadow-[0_0_10px_rgba(212,175,55,0.5)]' : 'bg-white/10'}`} />
           ))}
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-8 relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 overflow-y-auto no-scrollbar py-12">
         <AnimatePresence mode="wait">
           <motion.div 
             key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="w-full max-w-sm space-y-10"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.05, y: -10 }}
+            className="w-full max-w-xl space-y-10"
           >
             <div className="space-y-4 text-center">
-              <div className="w-16 h-16 glass-panel mx-auto flex items-center justify-center rounded-2xl text-gold border-white/20!">
+              <div className="w-16 h-16 glass-panel mx-auto flex items-center justify-center rounded-2xl text-gold border-white/20! shadow-inner">
                 <current.icon size={30} />
               </div>
               <h2 className="text-4xl font-serif italic font-bold tracking-tight">{current.title}</h2>
             </div>
 
-            <div className="space-y-6">
-              {current.type === 'budget' ? (
+            <div className="space-y-8">
+              {current.type === 'destination' ? (
+                <div className="space-y-10">
+                  <Globe onSelect={handleGlobeSelect} />
+                  <div className="relative group">
+                    <input 
+                      autoFocus
+                      value={data.destination}
+                      onChange={(e) => setData({ ...data, destination: e.target.value })}
+                      placeholder={current.placeholder}
+                      className="w-full bg-transparent border-b-2 border-white/10 py-4 text-2xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5 uppercase tracking-widest"
+                    />
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 flex gap-2">
+                      {['Tokyo', 'Paris', 'New York', 'Dubai', 'Sydney'].map(city => (
+                        <button 
+                          key={city}
+                          onClick={() => setData({...data, destination: city})}
+                          className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] uppercase font-black tracking-widest text-white/40 hover:text-gold hover:border-gold/30 transition-all"
+                        >
+                          {city}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : current.type === 'dates' ? (
+                <LuxuryCalendar onSelect={handleCalendarSelect} onOpenDates={handleOpenDates} />
+              ) : current.type === 'budget' ? (
                 <div className="flex flex-col items-center gap-8">
                   <div className="flex gap-4">
                     {[1, 2, 3, 4, 5].map(val => (
@@ -189,7 +225,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                       </button>
                     ))}
                   </div>
-                  <p className="text-[10px] text-white/40 italic font-medium uppercase tracking-widest">
+                  <p className="text-[10px] text-white/40 italic font-medium uppercase tracking-widest shadow-text">
                     Strategy: {["Economic Efficiency", "Standard Luxury", "Premium Selection", "Top-Tier Opulence", "Cost-No-Object"][data.budget - 1]}
                   </p>
                 </div>
@@ -199,41 +235,44 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                   value={(data as any)[current.key]}
                   onChange={(e) => setData({ ...data, [current.key]: e.target.value })}
                   placeholder={current.placeholder}
-                  className="w-full bg-transparent border-b-2 border-white/10 py-4 text-2xl font-light text-center focus:border-gold outline-none transition-colors placeholder:text-white/10"
+                  className="w-full bg-transparent border-b-2 border-white/10 py-6 text-3xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5"
                 />
               )}
 
-              <button
-                onClick={handleNext}
-                disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
-                className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-20"
-              >
-                {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next Protocol'}
-                {!isLoading && <ChevronRight size={16} />}
-              </button>
+              {current.type !== 'dates' && (
+                <button
+                  onClick={handleNext}
+                  disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
+                  className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-98 hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-20 disabled:translate-y-0"
+                >
+                  {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next Protocol'}
+                  {!isLoading && <ChevronRight size={16} />}
+                </button>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
       </main>
 
-      <footer className="p-8 text-center relative z-10">
-        <div className="flex flex-col items-center justify-center gap-3">
+      <footer className="p-10 text-center relative z-20">
+        <div className="flex flex-col items-center justify-center gap-4">
           {isLoading && (
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2 text-gold font-mono text-[9px] uppercase tracking-widest bg-gold/10 px-4 py-2 rounded-full border border-gold/20"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 text-gold font-mono text-[10px] uppercase tracking-[0.3em] bg-gold/5 px-6 py-3 rounded-full border border-gold/20 shadow-lg"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" />
+              <div className="w-2 h-2 rounded-full bg-gold animate-ping" />
               {loadingStatus || 'Aura is calculating your optimal route...'}
             </motion.div>
           )}
-          <div className="flex items-center gap-2 text-white/30">
-            <Sparkles size={12} />
-            <span className="text-[10px] uppercase font-bold tracking-[0.2em]">{isLoading ? 'Synthesizing Expedition' : 'Aura AI Intelligence Ready'}</span>
+          <div className="flex items-center gap-3 text-white/20">
+            <Sparkles size={14} className="animate-pulse" />
+            <span className="text-[11px] uppercase font-black tracking-[0.4em]">{isLoading ? 'Synthesizing Expedition' : 'Aura AI Intelligence Ready'}</span>
           </div>
         </div>
       </footer>
     </div>
   );
 }
+
