@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Map, Shield, Globe, Menu, X, Plus } from 'lucide-react';
+import { Sparkles, Map, Shield, Globe, Menu, X, Plus, Lock } from 'lucide-react';
 import AuraConcierge from './components/AuraConcierge';
 import ItineraryHub from './components/ItineraryHub';
 import SafetyCenter from './components/SafetyCenter';
 import Vault from './components/Vault';
+import Discovery from './components/Discovery';
 import Login from './components/Login';
 import NewTripOnboarding from './components/NewTripOnboarding';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
-type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault';
+type Tab = 'concierge' | 'itinerary' | 'safety' | 'vault' | 'discovery';
 
 export default function App() {
   const [user, setUser] = useState<User | any>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>('itinerary');
+  const [activeTab, setActiveTab] = useState<Tab>('discovery');
   const [tier, setTier] = useState<'basic' | 'elite'>('elite');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
@@ -86,10 +87,11 @@ export default function App() {
   }
 
   const tabs = [
+    { id: 'discovery', label: 'Explore', icon: Globe },
     { id: 'itinerary', label: 'Journey', icon: Map },
     { id: 'concierge', label: 'Aura', icon: Sparkles },
     { id: 'safety', label: 'Safety', icon: Shield },
-    { id: 'vault', label: 'Vault', icon: Globe },
+    { id: 'vault', label: 'Vault', icon: Lock },
   ];
 
   return (
@@ -158,6 +160,7 @@ export default function App() {
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className="h-full w-full absolute inset-0"
             >
+              {activeTab === 'discovery' && <Discovery />}
               {activeTab === 'concierge' && <AuraConcierge tier={tier} />}
               {activeTab === 'itinerary' && <ItineraryHub demoTrips={demoTrips} />}
               {activeTab === 'safety' && <SafetyCenter />}

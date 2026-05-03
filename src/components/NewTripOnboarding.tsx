@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock } from 'lucide-react';
+import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { chatWithAura } from '../lib/gemini';
@@ -21,6 +21,23 @@ export default function NewTripOnboarding({ user, onComplete, onCancel }: Onboar
   });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
+
+  useEffect(() => {
+    const handleStart = (e: any) => {
+      const exp = e.detail;
+      if (exp) {
+        setData({
+          destination: exp.destination,
+          accommodation: exp.vibe,
+          activity: 'Elite Exploration',
+          dates: 'Aura Premium Window'
+        });
+        setStep(1); // Reset to start but with data
+      }
+    };
+    window.addEventListener('START_ONBOARDING' as any, handleStart);
+    return () => window.removeEventListener('START_ONBOARDING' as any, handleStart);
+  }, []);
 
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
@@ -52,18 +69,19 @@ export default function NewTripOnboarding({ user, onComplete, onCancel }: Onboar
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
         "briefing": "Concise welcome message",
+        "destinationImage": "Unsplash search keyword for a vivid hero image of the destination",
         "flights": [
           { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this" }
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "Unsplash search keyword for hotel architecture/interior" }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost" }
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "Unsplash search keyword for this specific experience" }
         ],
         "localSecret": "One high-end local hidden gem"
       }
-      Provide 3 options for each category.`;
+      Provide 3 options for each category. Ensure keywords are specific like 'luxury hotel interior tokyo' or 'private yacht amalfi coast'.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);
