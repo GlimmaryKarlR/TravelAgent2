@@ -24,7 +24,7 @@ export default function Discovery() {
             "destination": "Specific Location (e.g. 'St. Barths' or 'Courchevel 1850')",
             "vibe": "What makes it elite (e.g. 'Private villa with 24/7 staff' or 'Michelin dining on the slopes')",
             "cost": "Est. price like $250,000+",
-            "imageKeyword": "Provide 2-3 BROAD, high-quality tags for image matching. Use simple terms like 'yacht,ocean', 'chalet,snow', 'mansion,tropical', 'private-jet'. AVOID niche or specific venue names."
+            "imageKeyword": "Provide 1-2 BROAD, very common tags. Use ONLY simple words like 'yacht', 'resort', 'mountain', 'villa', 'tokyo', 'paris', 'snow', 'desert'. Do NOT use niche words like 'icebergs' or 'heli-skiing'."
           }
         ]
       }`;
@@ -45,11 +45,12 @@ export default function Discovery() {
   }, []);
 
   const getImageUrl = (keyword: string, width = 800, height = 1000, random = 0) => {
-    const rawTags = (keyword || 'luxury,resort').split(',').map(t => t.trim().toLowerCase());
-    const tags = [...rawTags, 'luxury', 'expensive'].join(',');
-    // Stable seed based on keyword string to prevent repetitive fallbacks across sessions
+    // Keep only the first two tags provided by AI and add one quality tag
+    const rawTags = (keyword || 'luxury').split(',').map(t => t.trim().toLowerCase()).slice(0, 2);
+    const tags = [...rawTags, 'travel'].join(',');
+    
     const seed = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000;
-    return `https://loremflickr.com/${width}/${height}/${tags}/all?lock=${seed + random}`;
+    return `https://loremflickr.com/${width}/${height}/${tags}?lock=${seed + random}`;
   };
 
   return (
