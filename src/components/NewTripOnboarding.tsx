@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin } from 'lucide-react';
+import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin, Banknote, DollarSign } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { chatWithAura } from '../lib/gemini';
@@ -13,18 +13,19 @@ interface OnboardingProps {
 }
 
 export default function NewTripOnboarding({ user, initialData, onComplete, onCancel }: OnboardingProps) {
-  const [step, setStep] = useState(initialData ? 4 : 1);
+  const [step, setStep] = useState(initialData ? 5 : 1);
   const [data, setData] = useState({
     destination: initialData?.destination || '',
     accommodation: initialData?.title || '',
     activity: initialData?.vibe || '',
-    dates: 'Aura Premium Window'
+    dates: 'Aura Premium Window',
+    budget: 3
   });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1);
+    if (step < 5) setStep(step + 1);
     else handleSubmit();
   };
 
@@ -47,8 +48,13 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
     }, 1200);
 
     try {
+      const budgetLabel = ["Budget-Conscious", "Comfort", "Premium", "Luxury", "Ultra-High-Net-Worth"][data.budget - 1];
+      
       // Use Aura to synthesize the "Intelligence Report"
-      const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates}), staying at ${data.accommodation} and interested in ${data.activity}. 
+      const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates}).
+      Budget Tier: ${budgetLabel} (${data.budget}/5).
+      Preferred Accommodation: ${data.accommodation}. 
+      Interested in: ${data.activity}. 
       
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
@@ -109,10 +115,11 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
   };
 
   const steps = [
-    { title: "Where to?", icon: Plane, key: 'destination', placeholder: 'Tokyo, Paris, Mars...' },
-    { title: "When to travel?", icon: Clock, key: 'dates', placeholder: 'Summer 2026, Dec 12-20...' },
-    { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Boutique Hotel, Aman, Private Villa...' },
-    { title: "What to do?", icon: Activity, key: 'activity', placeholder: 'Architecture tour, Hidden dining...' },
+    { title: "Where to?", icon: Plane, key: 'destination', placeholder: 'Tokyo, Paris, Mars...', type: 'text' },
+    { title: "Spend Level", icon: Banknote, key: 'budget', type: 'budget' },
+    { title: "When to travel?", icon: Clock, key: 'dates', placeholder: 'Summer 2026, Dec 12-20...', type: 'text' },
+    { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Boutique Hotel, Aman, Private Villa...', type: 'text' },
+    { title: "What to do?", icon: Activity, key: 'activity', placeholder: 'Architecture tour, Hidden dining...', type: 'text' },
   ];
 
   const current = steps[step - 1];
@@ -127,7 +134,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       <header className="p-8 flex justify-between items-center relative z-10">
         <button onClick={onCancel} className="text-[10px] uppercase font-bold text-white/40 tracking-widest hover:text-white transition-colors">Cancel</button>
         <div className="flex gap-2">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className={`h-1 w-6 rounded-full transition-all duration-500 ${i <= step ? 'bg-gold' : 'bg-white/10'}`} />
           ))}
         </div>
@@ -150,20 +157,52 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
             </div>
 
             <div className="space-y-6">
-              <input 
-                autoFocus
-                value={(data as any)[current.key]}
-                onChange={(e) => setData({ ...data, [current.key]: e.target.value })}
-                placeholder={current.placeholder}
-                className="w-full bg-transparent border-b-2 border-white/10 py-4 text-2xl font-light text-center focus:border-gold outline-none transition-colors placeholder:text-white/10"
-              />
+              {current.type === 'budget' ? (
+                <div className="flex flex-col items-center gap-8">
+                  <div className="flex gap-4">
+                    {[1, 2, 3, 4, 5].map(val => (
+                      <button
+                        key={val}
+                        onClick={() => setData({ ...data, budget: val })}
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 border-2 ${
+                          data.budget === val 
+                            ? 'bg-gold/20 border-gold shadow-[0_0_20px_rgba(212,175,55,0.3)] scale-110' 
+                            : 'bg-white/5 border-white/10 hover:border-white/30 text-white/40'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: val }).map((_, idx) => (
+                              <DollarSign key={idx} size={val > 3 ? 10 : 12} className={data.budget === val ? 'text-gold' : 'text-white/20'} />
+                            ))}
+                          </div>
+                          <span className={`text-[8px] uppercase font-black tracking-tighter ${data.budget === val ? 'text-gold' : 'text-white/10'}`}>
+                            {['Basic', 'Comfort', 'Elite', 'Luxury', 'Veblen'][val - 1]}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-white/40 italic font-medium uppercase tracking-widest">
+                    Strategy: {["Economic Efficiency", "Standard Luxury", "Premium Selection", "Top-Tier Opulence", "Cost-No-Object"][data.budget - 1]}
+                  </p>
+                </div>
+              ) : (
+                <input 
+                  autoFocus
+                  value={(data as any)[current.key]}
+                  onChange={(e) => setData({ ...data, [current.key]: e.target.value })}
+                  placeholder={current.placeholder}
+                  className="w-full bg-transparent border-b-2 border-white/10 py-4 text-2xl font-light text-center focus:border-gold outline-none transition-colors placeholder:text-white/10"
+                />
+              )}
 
               <button
                 onClick={handleNext}
-                disabled={!(data as any)[current.key] || isLoading}
+                disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
                 className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-20"
               >
-                {isLoading ? 'Booking Intelligence...' : step === 4 ? 'Finalize Itinerary' : 'Next Protocol'}
+                {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next Protocol'}
                 {!isLoading && <ChevronRight size={16} />}
               </button>
             </div>
