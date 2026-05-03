@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark, Sparkles, Calendar, ChevronRight, Navigation } from 'lucide-react';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { ItineraryItem } from '../types';
 import GuidedTour from './GuidedTour';
@@ -74,9 +74,21 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
     handleBooking(id);
   };
 
-  const handleBooking = (id: string) => {
+  const handleBooking = async (id: string, date?: string) => {
     setBookingStatus(prev => ({ ...prev, [id]: 'authorizing' }));
     setRefiningBooking(null);
+    
+    if (date && latestTrip && auth.currentUser) {
+      try {
+        await updateDoc(doc(db, 'trips', latestTrip.id), {
+          dates: date,
+          updatedAt: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Failed to update trip dates", e);
+      }
+    }
+
     setTimeout(() => {
       setBookingStatus(prev => ({ ...prev, [id]: 'confirmed' }));
     }, 2000);
@@ -337,7 +349,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                 Abort
               </button>
               <button 
-                onClick={() => handleBooking(refiningBooking.id)}
+                onClick={() => handleBooking(refiningBooking.id, selectedDate)}
                 disabled={!selectedDate}
                 className="flex-1 py-4 bg-white text-dark text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/90 disabled:opacity-20"
               >

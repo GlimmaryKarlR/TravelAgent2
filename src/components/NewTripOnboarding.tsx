@@ -87,6 +87,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         accommodation: data.accommodation,
         activities: [data.activity],
         dates: data.dates,
+        budget: data.budget,
         intelligenceReport, // Simulated agent results
         status: 'active',
         createdAt: new Date().toISOString() // Fallback string for demo
