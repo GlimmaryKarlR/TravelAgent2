@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Map, Shield, Globe, Menu, X, Plus, Lock, CalendarDays } from 'lucide-react';
+import { Sparkles, Map, BookOpen, Globe, Menu, X, Plus, Lock, CalendarDays } from 'lucide-react';
 import AuraConcierge from './components/AuraConcierge';
 import ItineraryHub from './components/ItineraryHub';
 import ScheduleView from './components/ScheduleView';
-import SafetyCenter from './components/SafetyCenter';
+import BookingHub from './components/BookingHub';
 import Vault from './components/Vault';
 import Discovery from './components/Discovery';
 import Login from './components/Login';
@@ -104,7 +104,7 @@ export default function App() {
     { id: 'itinerary', label: 'Journey', icon: Map },
     { id: 'schedule', label: 'Schedule', icon: CalendarDays },
     { id: 'concierge', label: 'Aura', icon: Sparkles },
-    { id: 'safety', label: 'Safety', icon: Shield },
+    { id: 'safety', label: 'Bookings', icon: BookOpen },
     { id: 'vault', label: 'Vault', icon: Lock },
   ];
 
@@ -178,7 +178,7 @@ export default function App() {
               {activeTab === 'concierge' && <AuraConcierge tier={tier} />}
               {activeTab === 'itinerary' && <ItineraryHub demoTrips={demoTrips} />}
               {activeTab === 'schedule' && <ScheduleView demoTrips={demoTrips} />}
-              {activeTab === 'safety' && <SafetyCenter />}
+              {activeTab === 'safety' && <BookingHub />}
               {activeTab === 'vault' && <Vault tier={tier} setTier={setTier} />}
             </motion.div>
           </AnimatePresence>

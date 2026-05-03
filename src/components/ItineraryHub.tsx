@@ -146,6 +146,42 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-10"
               >
+                {/* Proposed Packages */}
+                {intelligence.packages && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-white/40 border-b border-white/5 pb-2">
+                      <Sparkles size={14} className="text-gold" />
+                      <span className="text-[9px] uppercase font-black tracking-widest">Select Proposed Package</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {intelligence.packages.map((pkg: any) => (
+                        <button 
+                          key={pkg.id}
+                          className="glass-panel p-5 text-left border-white/10! hover:border-gold/30 hover:bg-gold/5 transition-all group relative overflow-hidden"
+                        >
+                          <div className="relative z-10 space-y-3">
+                            <h4 className="text-sm font-bold tracking-tight text-white group-hover:text-gold transition-colors">{pkg.name}</h4>
+                            <p className="text-[10px] text-white/40 leading-relaxed italic line-clamp-2">{pkg.description}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {pkg.highlights?.map((h: string, i: number) => (
+                                <span key={i} className="text-[7px] uppercase font-black tracking-widest px-2 py-1 rounded bg-white/5 text-white/30">
+                                  {h}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="pt-2 text-[8px] uppercase font-black tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity">
+                              Select Protocol & See Itinerary Below →
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-white/20 italic text-center px-8 leading-relaxed">
+                      "Choose your preferred experience protocol. Selecting a package will refine the daily schedule below with optimized transit and personalized timing."
+                    </p>
+                  </div>
+                )}
+
                 {/* Flights */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-white/40 border-b border-white/5 pb-2">
@@ -262,20 +298,21 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white/40">
                         <Calendar size={14} />
-                        <span className="text-[9px] uppercase font-black tracking-widest">Confirmed Itinerary</span>
+                        <span className="text-[9px] uppercase font-black tracking-widest">Proposed Itinerary</span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap justify-center gap-2 items-center w-full mt-4">
                         {intelligence.schedule.map((day: any, idx: number) => (
                           <button 
                             key={idx}
                             onClick={() => setActiveDayIdx(idx)}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black transition-all ${
+                            className={`px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black transition-all ${
                               activeDayIdx === idx 
                                 ? 'bg-gold text-dark shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
                                 : 'bg-white/5 text-white/30 border border-white/10 hover:border-white/30'
                             }`}
                           >
-                            {idx + 1}
+                            <Calendar size={10} />
+                            Day {idx + 1}
                           </button>
                         ))}
                       </div>
@@ -297,7 +334,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                             }`}>
                               {i + 1}
                             </div>
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                               <div className="flex items-center gap-3">
                                 <span className="text-[9px] font-black font-mono text-white/30 tracking-widest">{item.time}</span>
                                 <span className={`text-[7px] uppercase font-bold px-1.5 py-0.5 rounded ${
@@ -306,14 +343,52 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                                   {item.status}
                                 </span>
                               </div>
-                              <h4 className="text-xs font-bold tracking-tight">{item.activity}</h4>
+                              <h4 className="text-sm font-bold tracking-tight">{item.activity}</h4>
                               <p className="text-[9px] text-white/40 font-medium italic flex items-center gap-1">
-                                <MapPin size={8} /> {item.location}
+                                <MapPin size={10} /> {item.location}
                               </p>
+                              
+                              {/* New Rich Details */}
+                              <div className="grid grid-cols-1 gap-3 pt-2">
+                                {item.transitSummary && (
+                                  <div className="flex items-center gap-2 text-[8px] uppercase font-black text-white/20 tracking-widest bg-white/5 p-2 rounded-lg decoration-gold/30">
+                                    <Navigation size={10} className="text-gold" />
+                                    {item.transitSummary}
+                                  </div>
+                                )}
+                                {item.personalizedNote && (
+                                  <div className="text-[10px] text-gold/80 italic leading-relaxed bg-gold/5 p-3 rounded-xl border border-gold/10">
+                                    <Sparkles size={10} className="inline mr-2 mb-1" />
+                                    {item.personalizedNote}
+                                  </div>
+                                )}
+                                {item.selectionReason && (
+                                  <div className="text-[9px] text-white/30 font-medium leading-relaxed">
+                                    <Info size={10} className="inline mr-1.5" />
+                                    {item.selectionReason}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
+                    </div>
+                    
+                    {/* Reserve Button at bottom of itinerary */}
+                    <div className="pt-10">
+                      <button 
+                        onClick={() => handleBooking('global-reserve')}
+                        className="w-full py-6 bg-white text-dark rounded-[24px] font-black uppercase tracking-[0.4em] text-xs shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:shadow-[0_20px_80px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition-all group flex flex-col items-center gap-2"
+                      >
+                        <span className="flex items-center gap-3">
+                          {bookingStatus['global-reserve'] === 'confirmed' ? 'Expedition Secured' : 'Reserve & Authorize Intelligence'}
+                          {bookingStatus['global-reserve'] !== 'confirmed' && <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+                        </span>
+                        <span className="text-[8px] opacity-40 lowercase tracking-widest font-normal italic">
+                          This authorizes Aura to utilize your stored vaulted assets for all primary bookings.
+                        </span>
+                      </button>
                     </div>
                   </div>
                 )}

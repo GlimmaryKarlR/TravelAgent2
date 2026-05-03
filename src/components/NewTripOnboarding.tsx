@@ -80,26 +80,46 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       The trip duration is ${dayCount} days based on the user's selection: ${data.dates || 'Flexible Window'}.
       Each day should be a separate entry in the "schedule" array.
       Each item in the schedule MUST include geographic coordinates (latitude and longitude) for the ${data.destination} area.
+      
+      LOGIC REQUIREMENTS:
+      1. Time Management: Account for transit between every activity. Explicitly calculate travel time.
+      2. Optimization: Explain why each event is selected for that specific time (e.g., "sunset views" or "avoiding crowds").
+      3. Packages: Propose 2-3 "Luxury Packages" (Experience bundles) the user can choose from (e.g., "The Gastronomic Route", "The Adventure Protocol").
+      4. Personalization: Add tips for the user (e.g., "Get sleep on the plane as arrival is late").
 
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
-        "briefing": "Concise welcome message",
+        "briefing": "Concise welcome message explaining the logic of the selected route based on transit and timing",
         "destinationImage": "2-3 extremely BROAD high-quality tags separated by commas (e.g., 'tokyo,skyline' or 'island,resort').",
+        "packages": [
+          { "id": "p1", "name": "Package Name", "description": "Short explanation of the vibe", "highlights": ["Highlight 1", "Highlight 2"] }
+        ],
         "flights": [
           { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this", "imageKeyword": "2 simple tags separated by commas (e.g., 'pool,resort' or 'suite,luxury')." }
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Detailed explanation of why Aura picked this considering transit/convenience", "imageKeyword": "2 simple tags separated by commas (e.g., 'pool,resort' or 'suite,luxury')." }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2 simple tags separated by commas (e.g., 'yacht,ocean' or 'helicopter,tour')." }
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "reason": "Detailed logic for selection", "imageKeyword": "2 simple tags separated by commas (e.g., 'yacht,ocean' or 'helicopter,tour')." }
         ],
         "schedule": [
           { 
             "day": 1,
             "date": "Full date string",
             "items": [
-              { "time": "09:00", "activity": "Morning Coffee at Secret Terrace", "status": "booked", "type": "dining", "location": "Exact venue name", "lat": 0.0, "lng": 0.0 }
+              { 
+                "time": "09:00", 
+                "activity": "Activity Name", 
+                "status": "booked", 
+                "type": "dining/activity/transit", 
+                "location": "Exact venue", 
+                "lat": 0.0, 
+                "lng": 0.0,
+                "transitSummary": "Transit method and time from previous location",
+                "personalizedNote": "Aura's specific advice for this moment",
+                "selectionReason": "Why this time and place works best in the overall flow"
+              }
             ]
           }
         ],
