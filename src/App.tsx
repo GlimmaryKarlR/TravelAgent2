@@ -19,6 +19,7 @@ export default function App() {
   const [tier, setTier] = useState<'basic' | 'elite'>('elite');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAlertActive, setIsAlertActive] = useState(false);
+  const [demoTrips, setDemoTrips] = useState<any[]>([]);
 
   const handleDemoLogin = () => {
     setUser({
@@ -71,7 +72,11 @@ export default function App() {
   if (showOnboarding) {
     return (
       <NewTripOnboarding 
-        onComplete={() => {
+        user={user}
+        onComplete={(newTrip) => {
+          if (newTrip && !auth.currentUser) {
+            setDemoTrips([newTrip, ...demoTrips]);
+          }
           setShowOnboarding(false);
           setActiveTab('itinerary');
         }}
@@ -154,7 +159,7 @@ export default function App() {
               className="h-full w-full absolute inset-0"
             >
               {activeTab === 'concierge' && <AuraConcierge tier={tier} />}
-              {activeTab === 'itinerary' && <ItineraryHub />}
+              {activeTab === 'itinerary' && <ItineraryHub demoTrips={demoTrips} />}
               {activeTab === 'safety' && <SafetyCenter />}
               {activeTab === 'vault' && <Vault tier={tier} setTier={setTier} />}
             </motion.div>

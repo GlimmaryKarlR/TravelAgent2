@@ -6,12 +6,24 @@ import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestor
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { ItineraryItem } from '../types';
 
-export default function ItineraryHub() {
-  const [trips, setTrips] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) {
+  const [trips, setTrips] = useState<any[]>(demoTrips);
+  const [loading, setLoading] = useState(!demoTrips.length);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
+    // Merge demo trips initially if any
+    if (demoTrips.length > 0) {
+      setTrips(prev => {
+        const ids = new Set(prev.map(t => t.id || t.createdAt));
+        const newDemo = demoTrips.filter(t => !ids.has(t.id || t.createdAt));
+        return [...newDemo, ...prev];
+      });
+    }
+
+    if (!auth.currentUser) {
+      setLoading(false);
+      return;
+    }
 
     const q = query(
       collection(db, 'trips'),
@@ -24,6 +36,7 @@ export default function ItineraryHub() {
         id: doc.id,
         ...doc.data()
       }));
+      // In real mode, we prioritize firestore but can still show local demo if needed
       setTrips(tripData);
       setLoading(false);
     }, (error) => {
@@ -31,7 +44,7 @@ export default function ItineraryHub() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [demoTrips]);
 
   const latestTrip = trips[0];
 

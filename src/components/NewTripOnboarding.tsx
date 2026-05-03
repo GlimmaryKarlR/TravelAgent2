@@ -6,11 +6,12 @@ import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { chatWithAura } from '../lib/gemini';
 
 interface OnboardingProps {
-  onComplete: () => void;
+  user: any;
+  onComplete: (tripData?: any) => void;
   onCancel: () => void;
 }
 
-export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingProps) {
+export default function NewTripOnboarding({ user, onComplete, onCancel }: OnboardingProps) {
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
     destination: '',
@@ -35,7 +36,7 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
   ];
 
   const handleSubmit = async () => {
-    if (!auth.currentUser) return;
+    if (!user) return;
     setIsLoading(true);
     
     let i = 0;
@@ -53,22 +54,38 @@ export default function NewTripOnboarding({ onComplete, onCancel }: OnboardingPr
       const intelligenceReport = await chatWithAura(messages);
 
       const tripData = {
-        userId: auth.currentUser.uid,
+        userId: user.uid,
         destination: data.destination,
         accommodation: data.accommodation,
         activities: [data.activity],
         dates: data.dates,
         intelligenceReport, // Simulated agent results
         status: 'active',
-        createdAt: serverTimestamp()
+        createdAt: new Date().toISOString() // Fallback string for demo
       };
       
-      await addDoc(collection(db, 'trips'), tripData);
+      // Only attempt Firestore if we have a real Firebase session
+      if (auth.currentUser) {
+        await addDoc(collection(db, 'trips'), { 
+          ...tripData, 
+          createdAt: serverTimestamp() 
+        });
+      } else {
+        // Mock delay for demo users to show the status messages
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        // We pass the tripData back to App to update local state if needed
+      }
+
       clearInterval(statusInterval);
-      onComplete();
+      onComplete(tripData);
     } catch (error) {
       clearInterval(statusInterval);
-      handleFirestoreError(error, OperationType.CREATE, 'trips');
+      if (auth.currentUser) {
+        handleFirestoreError(error, OperationType.CREATE, 'trips');
+      } else {
+        console.error("Demo submission failed:", error);
+        onComplete(); // Still complete even if Gemini fails in demo
+      }
     } finally {
       setIsLoading(false);
     }
