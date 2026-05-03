@@ -67,6 +67,12 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   const [showTour, setShowTour] = useState(false);
   const [activeDayIdx, setActiveDayIdx] = useState(0);
 
+  // New Selection States
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [selectedFlight, setSelectedFlight] = useState<number | null>(null);
+  const [selectedHotel, setSelectedHotel] = useState<number | null>(null);
+  const [selectedExperiences, setSelectedExperiences] = useState<number[]>([]);
+
   const startBooking = (id: string, type: 'flight' | 'hotel' | 'tour', data: any) => {
     // If trip dates are generic, ask for refinement
     if (!latestTrip.dates || latestTrip.dates.includes('Aura') || latestTrip.dates.includes('Active')) {
@@ -157,10 +163,20 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                       {intelligence.packages.map((pkg: any) => (
                         <button 
                           key={pkg.id}
-                          className="glass-panel p-5 text-left border-white/10! hover:border-gold/30 hover:bg-gold/5 transition-all group relative overflow-hidden"
+                          onClick={() => setSelectedPackage(pkg.id)}
+                          className={`glass-panel p-5 text-left transition-all group relative overflow-hidden ${
+                            selectedPackage === pkg.id 
+                              ? 'border-gold/50 bg-gold/5 shadow-[0_0_30px_rgba(212,175,55,0.1)]' 
+                              : 'border-white/10! hover:border-gold/30 hover:bg-gold/5'
+                          }`}
                         >
                           <div className="relative z-10 space-y-3">
-                            <h4 className="text-sm font-bold tracking-tight text-white group-hover:text-gold transition-colors">{pkg.name}</h4>
+                            <div className="flex justify-between items-start">
+                              <h4 className={`text-sm font-bold tracking-tight transition-colors ${selectedPackage === pkg.id ? 'text-gold' : 'text-white'}`}>{pkg.name}</h4>
+                              {selectedPackage === pkg.id && (
+                                <span className="text-[7px] font-black bg-gold text-dark px-1.5 py-0.5 rounded uppercase tracking-widest">Selected</span>
+                              )}
+                            </div>
                             <p className="text-[10px] text-white/40 leading-relaxed italic line-clamp-2">{pkg.description}</p>
                             <div className="flex flex-wrap gap-2">
                               {pkg.highlights?.map((h: string, i: number) => (
@@ -169,8 +185,8 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                                 </span>
                               ))}
                             </div>
-                            <div className="pt-2 text-[8px] uppercase font-black tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity">
-                              Select Protocol & See Itinerary Below →
+                            <div className={`pt-2 text-[8px] uppercase font-black tracking-widest text-gold transition-opacity ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                              {selectedPackage === pkg.id ? 'Protocol Active' : 'Select Protocol & See Itinerary Below →'}
                             </div>
                           </div>
                         </button>
@@ -190,7 +206,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {intelligence.flights?.map((f: any, i: number) => (
-                      <div key={i} className="glass-panel p-5 border-white/10! space-y-4 hover:bg-white/[0.03] transition-colors">
+                      <div key={i} className={`glass-panel p-5 space-y-4 transition-colors ${selectedFlight === i ? 'border-gold/30 bg-gold/5' : 'border-white/10! hover:bg-white/[0.03]'}`}>
                         <div className="flex justify-between">
                           <div>
                             <p className="text-[8px] text-gold uppercase font-black tracking-tighter mb-1">{f.carrier}</p>
@@ -200,10 +216,14 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                         </div>
                         <div className="flex gap-2">
                           <button 
-                            onClick={() => startBooking(`flight-${i}`, 'flight', f)}
-                            className="flex-1 py-2 rounded-lg bg-gold/10 text-gold text-[9px] uppercase font-bold tracking-widest border border-gold/20 hover:bg-gold/20"
+                            onClick={() => setSelectedFlight(i)}
+                            className={`flex-1 py-2 rounded-lg text-[9px] uppercase font-bold tracking-widest border transition-all ${
+                              selectedFlight === i 
+                                ? 'bg-gold text-dark border-gold shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+                                : 'bg-gold/10 text-gold border-gold/20 hover:bg-gold/20'
+                            }`}
                           >
-                            {bookingStatus[`flight-${i}`] === 'confirmed' ? 'Secured' : bookingStatus[`flight-${i}`] === 'authorizing' ? 'Verifying...' : 'Authorize AI'}
+                            {selectedFlight === i ? 'Selected Protocol' : 'Select'}
                           </button>
                         </div>
                       </div>
@@ -218,7 +238,9 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                     <span className="text-[9px] uppercase font-black tracking-widest">Select Accommodation</span>
                   </div>
                   {intelligence.hotels?.map((h: any, i: number) => (
-                    <div key={i} className="glass-panel overflow-hidden border-white/10! flex flex-col md:flex-row gap-0 items-stretch bg-gradient-to-r from-white/[0.02] to-transparent">
+                    <div key={i} className={`glass-panel overflow-hidden flex flex-col md:flex-row gap-0 items-stretch transition-all ${
+                      selectedHotel === i ? 'border-gold/30 bg-gold/5' : 'border-white/10! bg-gradient-to-r from-white/[0.02] to-transparent'
+                    }`}>
                       <div className="w-full md:w-1/3 h-48 md:h-auto relative">
                         <img 
                           src={getImageUrl(h.imageKeyword || 'luxury hotel', 800, 800, i)}
@@ -230,17 +252,21 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                       </div>
                       <div className="flex-1 p-6 space-y-2">
                         <div className="flex items-baseline gap-3">
-                          <h4 className="text-xl font-serif italic">{h.name}</h4>
+                          <h4 className={`text-xl font-serif italic transition-colors ${selectedHotel === i ? 'text-gold' : 'text-white'}`}>{h.name}</h4>
                           <span className="text-[9px] text-gold font-bold uppercase tracking-widest">{h.price}</span>
                         </div>
                         <p className="text-[10px] text-white/40 italic leading-relaxed">"{h.reason}"</p>
                         <p className="text-[9px] text-white/20 font-mono">{h.details}</p>
                         <div className="pt-4 flex gap-3">
                           <button 
-                            onClick={() => startBooking(`hotel-${i}`, 'hotel', h)}
-                            className="flex-1 md:flex-none px-6 py-3 bg-white text-dark rounded-xl text-[10px] font-black uppercase tracking-widest"
+                            onClick={() => setSelectedHotel(i)}
+                            className={`flex-1 md:flex-none px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                              selectedHotel === i
+                                ? 'bg-gold text-dark shadow-[0_0_30px_rgba(212,175,55,0.2)]'
+                                : 'bg-white text-dark hover:bg-white/90'
+                            }`}
                           >
-                            {bookingStatus[`hotel-${i}`] === 'confirmed' ? 'Reservation Active' : 'AI Direct Booking'}
+                            {selectedHotel === i ? 'Selected Protocol' : 'Select'}
                           </button>
                         </div>
                       </div>
@@ -256,7 +282,9 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {intelligence.tours?.map((t: any, i: number) => (
-                      <div key={i} className="glass-panel overflow-hidden border-white/10! space-y-0 group bg-white/[0.02]">
+                      <div key={i} className={`glass-panel overflow-hidden transition-all group ${
+                        selectedExperiences.includes(i) ? 'border-gold/30 bg-gold/5' : 'border-white/10! bg-white/[0.02]'
+                      }`}>
                         <div className="h-40 overflow-hidden relative">
                           <img 
                             src={getImageUrl(t.imageKeyword || 'exclusive tour', 600, 400, i + 10)}
@@ -271,20 +299,19 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                           <p className="text-[9px] text-white/40">{t.contact}</p>
                           <div className="flex gap-2">
                             <button 
-                              onClick={() => startBooking(`tour-${i}`, 'tour', t)}
-                              className="flex-1 py-2 bg-gold/5 border border-gold/20 text-gold text-[8px] font-bold uppercase tracking-widest rounded-lg transition-colors hover:bg-gold/10"
+                              onClick={() => {
+                                setSelectedExperiences(prev => 
+                                  prev.includes(i) ? prev.filter(idx => idx !== i) : [...prev, i]
+                                );
+                              }}
+                              className={`flex-1 py-2 text-[8px] font-bold uppercase tracking-widest rounded-lg transition-all border ${
+                                selectedExperiences.includes(i)
+                                  ? 'bg-gold text-dark border-gold'
+                                  : 'bg-gold/5 text-gold border-gold/20 hover:bg-gold/10'
+                              }`}
                             >
-                              {bookingStatus[`tour-${i}`] === 'confirmed' ? 'Requested' : 'Reserve Access'}
+                              {selectedExperiences.includes(i) ? 'Added' : 'Add to Journey'}
                             </button>
-                            {bookingStatus[`tour-${i}`] === 'confirmed' && (
-                              <button 
-                                onClick={() => setShowTour(true)}
-                                className="px-3 py-2 bg-white text-dark rounded-lg flex items-center justify-center hover:bg-white/90"
-                                title="Guided GPS Tour"
-                              >
-                                <Navigation size={12} />
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>
