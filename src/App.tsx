@@ -176,7 +176,16 @@ export default function App() {
             >
               {activeTab === 'discovery' && <Discovery />}
               {activeTab === 'concierge' && <AuraConcierge tier={tier} />}
-              {activeTab === 'itinerary' && <ItineraryHub demoTrips={demoTrips} />}
+              {activeTab === 'itinerary' && (
+                <ItineraryHub 
+                  demoTrips={demoTrips} 
+                  onSyncTrip={(id, updatedData) => {
+                    if (!auth.currentUser) {
+                      setDemoTrips(prev => prev.map(t => (t.id === id || t.createdAt === id) ? { ...t, ...updatedData } : t));
+                    }
+                  }}
+                />
+              )}
               {activeTab === 'schedule' && <ScheduleView demoTrips={demoTrips} />}
               {activeTab === 'safety' && <BookingHub />}
               {activeTab === 'vault' && <Vault tier={tier} setTier={setTier} />}

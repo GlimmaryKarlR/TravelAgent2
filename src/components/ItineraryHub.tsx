@@ -8,20 +8,19 @@ import { ItineraryItem } from '../types';
 import GuidedTour from './GuidedTour';
 import ItineraryMap from './ItineraryMap';
 
-export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) {
+export default function ItineraryHub({ 
+  demoTrips = [], 
+  onSyncTrip 
+}: { 
+  demoTrips?: any[],
+  onSyncTrip?: (id: string, data: any) => void
+}) {
   const [trips, setTrips] = useState<any[]>(demoTrips);
   const [loading, setLoading] = useState(!demoTrips.length);
 
   useEffect(() => {
-    if (demoTrips.length > 0) {
-      setTrips(prev => {
-        const ids = new Set(prev.map(t => t.id || t.createdAt));
-        const newDemo = demoTrips.filter(t => !ids.has(t.id || t.createdAt));
-        return [...newDemo, ...prev];
-      });
-    }
-
     if (!auth.currentUser) {
+      setTrips(demoTrips);
       setLoading(false);
       return;
     }
@@ -170,6 +169,33 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
         });
       } catch (e) {
         console.error("Failed to update trip dates", e);
+      }
+    }
+
+    if (id === 'global-reserve' && latestTrip) {
+      const confirmedSchedule = getSynthesizedSchedule();
+      const updatedTrip = { ...latestTrip, confirmedSchedule, status: 'Confirmed' };
+      
+      // Update local state immediately
+      setTrips(prev => prev.map(t => (t.id === latestTrip.id || t.createdAt === latestTrip.createdAt) ? updatedTrip : t));
+
+      if (onSyncTrip) {
+        onSyncTrip(latestTrip.id || latestTrip.createdAt, { 
+          confirmedSchedule,
+          status: 'Confirmed'
+        });
+      }
+
+      if (auth.currentUser && latestTrip.id) {
+        try {
+          await updateDoc(doc(db, 'trips', latestTrip.id), {
+            confirmedSchedule,
+            status: 'Confirmed',
+            updatedAt: serverTimestamp()
+          });
+        } catch (e) {
+          console.error("Failed to sync confirmed schedule", e);
+        }
       }
     }
 

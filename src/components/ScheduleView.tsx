@@ -20,6 +20,7 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
 
   useEffect(() => {
     if (!auth.currentUser) {
+      setTrips(demoTrips);
       setLoading(false);
       return;
     }
@@ -54,7 +55,20 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
   };
 
   const intelligence = latestTrip?.intelligenceReport ? parseIntelligence(latestTrip.intelligenceReport) : null;
-  const schedule: ScheduleItem[] = intelligence?.schedule || [
+  const confirmedSchedule = latestTrip?.confirmedSchedule;
+
+  const getSourceSchedule = () => {
+    if (confirmedSchedule && confirmedSchedule[selectedDay - 1]) {
+      return confirmedSchedule[selectedDay - 1].items;
+    }
+    if (intelligence?.schedule && intelligence.schedule[selectedDay - 1]) {
+      return intelligence.schedule[selectedDay - 1].items;
+    }
+    return null;
+  };
+
+  const dayItems = getSourceSchedule();
+  const schedule: ScheduleItem[] = dayItems || [
     { time: "08:00", activity: "VIP Landing Protocol", status: "booked", type: "flight", location: "General Aviation Terminal" },
     { time: "10:30", activity: "Expedition Check-in", status: "booked", type: "hotel", location: latestTrip?.destination },
     { time: "13:00", activity: "Elite Welcome Lunch", status: "proposed", type: "dining", location: "The Crystal Terrace" },
@@ -67,6 +81,8 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
       case 'flight': return <Plane size={14} />;
       case 'dining': return <Utensils size={14} />;
       case 'tour': return <Landmark size={14} />;
+      case 'hotel':
+      case 'accommodation': return <MapPin size={14} />;
       default: return <Sparkles size={14} />;
     }
   };
@@ -96,17 +112,20 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
     <div className="h-full flex flex-col bg-dark overflow-hidden">
       {/* Day Selector */}
       <div className="px-8 pt-8 pb-6 border-b border-white/5 flex gap-4 overflow-x-auto no-scrollbar">
-        {[1, 2, 3].map(day => (
-          <button
-            key={day}
-            onClick={() => setSelectedDay(day)}
-            className={`px-6 py-2 rounded-full text-[10px] uppercase font-black tracking-widest transition-all shrink-0 ${
-              selectedDay === day ? 'bg-gold text-dark shadow-[0_0_20px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-white/40 border border-white/10'
-            }`}
-          >
-            Day {day}
-          </button>
-        ))}
+        {(confirmedSchedule || intelligence?.schedule || [1, 2, 3]).map((_, idx) => {
+          const day = idx + 1;
+          return (
+            <button
+              key={day}
+              onClick={() => setSelectedDay(day)}
+              className={`px-6 py-2 rounded-full text-[10px] uppercase font-black tracking-widest transition-all shrink-0 ${
+                selectedDay === day ? 'bg-gold text-dark shadow-[0_0_20px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-white/40 border border-white/10'
+              }`}
+            >
+              Day {day}
+            </button>
+          );
+        })}
       </div>
 
       {/* Timeline Scrollable */}
