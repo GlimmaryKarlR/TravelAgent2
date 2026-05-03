@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark, Sparkles, Calendar, ChevronRight, Navigation } from 'lucide-react';
+import { Plane, MapPin, Clock, Info, AlertTriangle, ShieldCheck, CheckCircle2, Ticket, Landmark, Sparkles, Calendar, ChevronRight, Navigation, Map as MapIcon } from 'lucide-react';
 import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { ItineraryItem } from '../types';
 import GuidedTour from './GuidedTour';
+import ItineraryMap from './ItineraryMap';
 
 export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) {
   const [trips, setTrips] = useState<any[]>(demoTrips);
@@ -64,6 +65,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   const [refiningBooking, setRefiningBooking] = useState<{ id: string, type: 'flight' | 'hotel' | 'tour', data: any } | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [showTour, setShowTour] = useState(false);
+  const [activeDayIdx, setActiveDayIdx] = useState(0);
 
   const startBooking = (id: string, type: 'flight' | 'hotel' | 'tour', data: any) => {
     // If trip dates are generic, ask for refinement
@@ -250,6 +252,68 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                   </div>
                 </div>
 
+                {/* Daily Itinerary */}
+                {intelligence.schedule && (
+                  <div className="space-y-8 pt-6 border-t border-white/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-white/40">
+                        <Calendar size={14} />
+                        <span className="text-[9px] uppercase font-black tracking-widest">Confirmed Itinerary</span>
+                      </div>
+                      <div className="flex gap-2">
+                        {intelligence.schedule.map((day: any, idx: number) => (
+                          <button 
+                            key={idx}
+                            onClick={() => setActiveDayIdx(idx)}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black transition-all ${
+                              activeDayIdx === idx 
+                                ? 'bg-gold text-dark shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+                                : 'bg-white/5 text-white/30 border border-white/10 hover:border-white/30'
+                            }`}
+                          >
+                            {idx + 1}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="glass-panel p-2 border-white/10!">
+                        <ItineraryMap items={intelligence.schedule[activeDayIdx]?.items || []} />
+                      </div>
+
+                      <div className="space-y-6">
+                        {intelligence.schedule[activeDayIdx]?.items.map((item: any, i: number) => (
+                          <div key={i} className="relative pl-10 group">
+                            <div className="absolute left-[13px] top-6 bottom-0 w-[1px] bg-white/5 group-last:hidden" />
+                            <div className={`absolute left-0 top-0 w-7 h-7 rounded-full flex items-center justify-center border text-[10px] font-black ${
+                              item.status === 'booked' 
+                                ? 'bg-gold/20 border-gold/40 text-gold shadow-[0_0_10px_rgba(212,175,55,0.2)]' 
+                                : 'bg-white/5 border-white/10 text-white/20'
+                            }`}>
+                              {i + 1}
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-3">
+                                <span className="text-[9px] font-black font-mono text-white/30 tracking-widest">{item.time}</span>
+                                <span className={`text-[7px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                                  item.status === 'booked' ? 'bg-gold/10 text-gold' : 'bg-white/5 text-white/40'
+                                }`}>
+                                  {item.status}
+                                </span>
+                              </div>
+                              <h4 className="text-xs font-bold tracking-tight">{item.activity}</h4>
+                              <p className="text-[9px] text-white/40 font-medium italic flex items-center gap-1">
+                                <MapPin size={8} /> {item.location}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {intelligence.localSecret && (
                   <div className="p-6 glass-panel border-gold/40! bg-gold/5 relative overflow-hidden">
                     <Sparkles size={40} className="absolute -right-4 -top-4 text-gold/10 rotate-12" />
@@ -270,21 +334,23 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
               </div>
             )}
 
-            {/* Timeline Simulation */}
-            <div className="space-y-6 pt-10 border-t border-white/5">
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Journey Protocol</h3>
-              <div className="relative pl-10 pb-8 group">
-                <div className="absolute left-[13px] top-8 bottom-0 w-[1px] bg-white/10" />
-                <div className="absolute left-0 top-0 w-7 h-7 rounded-lg flex items-center justify-center border bg-gold/20 border-gold/40 text-gold shadow-[0_0_10px_rgba(212,175,55,0.2)]">
-                  <Plane size={14} />
-                </div>
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold font-mono text-gold/60 tracking-wider">T-Minus Zero</span>
-                  <h4 className="text-sm font-bold tracking-tight">Expedition Initialized</h4>
-                  <p className="text-[11px] text-white/40 font-medium">{latestTrip.destination}</p>
+            {/* Default protocol if no intelligence yet */}
+            {!intelligence && (
+              <div className="space-y-6 pt-10 border-t border-white/5">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Journey Protocol</h3>
+                <div className="relative pl-10 pb-8 group">
+                  <div className="absolute left-[13px] top-8 bottom-0 w-[1px] bg-white/10" />
+                  <div className="absolute left-0 top-0 w-7 h-7 rounded-lg flex items-center justify-center border bg-gold/20 border-gold/40 text-gold shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+                    <Plane size={14} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold font-mono text-gold/60 tracking-wider">T-Minus Zero</span>
+                    <h4 className="text-sm font-bold tracking-tight">Expedition Initialized</h4>
+                    <p className="text-[11px] text-white/40 font-medium">{latestTrip.destination}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) }
           </div>
         </>
       ) : (

@@ -52,11 +52,35 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
     try {
       const budgetLabel = ["Budget-Conscious", "Comfort", "Premium", "Luxury", "Ultra-High-Net-Worth"][data.budget - 1];
       
+      // Calculate duration from dates string if possible
+      let dayCount = 4; // Default
+      if (data.dates && data.dates.includes('-')) {
+        try {
+          const parts = data.dates.split(' - ');
+          if (parts.length === 2) {
+            const yearMatch = parts[1].match(/\d{4}/);
+            const year = yearMatch ? yearMatch[0] : new Date().getFullYear();
+            const start = new Date(`${parts[0]}, ${year}`);
+            const end = new Date(parts[1]);
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            if (!isNaN(diffDays) && diffDays > 0) dayCount = diffDays;
+          }
+        } catch (e) {
+          console.log("Could not parse dates for precise day count, falling back to flexible estimation.");
+        }
+      }
+
       const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates || 'Flexible Dates'}).
       Budget Tier: ${budgetLabel} (${data.budget}/5).
       Preferred Accommodation: ${data.accommodation}. 
       Interested in: ${data.activity}. 
       
+      IMPORTANT: You MUST generate a daily itinerary for EXACTLY ${dayCount} days. 
+      The trip duration is ${dayCount} days based on the user's selection: ${data.dates || 'Flexible Window'}.
+      Each day should be a separate entry in the "schedule" array.
+      Each item in the schedule MUST include geographic coordinates (latitude and longitude) for the ${data.destination} area.
+
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
         "briefing": "Concise welcome message",
@@ -71,13 +95,17 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
           { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "imageKeyword": "2-3 tags for the activity (e.g., 'yacht,ocean' or 'helicopter,mountain')" }
         ],
         "schedule": [
-          { "time": "09:00", "activity": "Morning Coffee at Secret Terrace", "status": "booked", "type": "dining" },
-          { "time": "11:30", "activity": "Private Museum After-Hours", "status": "proposed", "type": "tour" },
-          { "time": "14:00", "activity": "Helicopter Transfer to Coast", "status": "booked", "type": "flight" }
+          { 
+            "day": 1,
+            "date": "Full date string",
+            "items": [
+              { "time": "09:00", "activity": "Morning Coffee at Secret Terrace", "status": "booked", "type": "dining", "location": "Exact venue name", "lat": 0.0, "lng": 0.0 }
+            ]
+          }
         ],
         "localSecret": "One high-end local hidden gem"
       }
-      Provide 3 options for each categories (flights, hotels, tours). For the schedule, provide a 2-day sample timeline with at least 4-5 items per day. Keep image tags simple and comma-separated to ensure high-quality matching.`;
+      Provide 3 options for each category (flights, hotels, tours). Keep image tags simple and comma-separated to ensure high-quality matching.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);
@@ -174,7 +202,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
 
             <div className="space-y-8">
               {current.type === 'destination' ? (
-                <div className="space-y-10 flex flex-col items-center">
+                <div className="space-y-10 flex flex-col items-center min-h-[440px]">
                   <Globe onSelect={handleGlobeSelect} />
                   <div className="w-full space-y-6">
                     <input 
@@ -198,11 +226,11 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                   </div>
                 </div>
               ) : current.type === 'dates' ? (
-                <div className="flex justify-center">
+                <div className="flex justify-center min-h-[440px]">
                   <LuxuryCalendar onSelect={handleCalendarSelect} onOpenDates={handleOpenDates} />
                 </div>
               ) : current.type === 'budget' ? (
-                <div className="flex flex-col items-center gap-8">
+                <div className="flex flex-col items-center gap-8 min-h-[440px] justify-center">
                   <div className="flex flex-wrap justify-center gap-4">
                     {[1, 2, 3, 4, 5].map(val => (
                       <button
@@ -232,28 +260,38 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                   </p>
                 </div>
               ) : (
-                <input 
-                  autoFocus
-                  value={(data as any)[current.key]}
-                  onChange={(e) => setData({ ...data, [current.key]: e.target.value })}
-                  placeholder={current.placeholder}
-                  className="w-full bg-transparent border-b-2 border-white/10 py-6 text-3xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5"
-                />
-              )}
-
-              {current.type !== 'dates' && (
-                <button
-                  onClick={handleNext}
-                  disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
-                  className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-98 hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-20 disabled:translate-y-0"
-                >
-                  {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next Protocol'}
-                  {!isLoading && <ChevronRight size={16} />}
-                </button>
+                <div className="min-h-[440px] flex items-center">
+                  <input 
+                    autoFocus
+                    value={(data as any)[current.key]}
+                    onChange={(e) => setData({ ...data, [current.key]: e.target.value })}
+                    placeholder={current.placeholder}
+                    className="w-full bg-transparent border-b-2 border-white/10 py-6 text-3xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5"
+                  />
+                </div>
               )}
             </div>
           </motion.div>
         </AnimatePresence>
+
+        <div className="w-full max-w-xl px-4 mt-8 h-20 flex items-start">
+          <AnimatePresence mode="wait">
+            {current.type !== 'dates' && (
+              <motion.button
+                key="next-button"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                onClick={handleNext}
+                disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
+                className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-98 hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-20 disabled:translate-y-0"
+              >
+                {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next Protocol'}
+                {!isLoading && <ChevronRight size={16} />}
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
       </main>
 
       <footer className="p-10 text-center relative z-20">
