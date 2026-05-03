@@ -47,8 +47,23 @@ export default function NewTripOnboarding({ user, onComplete, onCancel }: Onboar
 
     try {
       // Use Aura to synthesize the "Intelligence Report"
-      const prompt = `Plan a travel briefing for a user going to ${data.destination} staying at ${data.accommodation} wanting to do ${data.activity} during ${data.dates}. 
-      Include 2 optimal flight options (suggested) and 1 local secret. Keep it concise.`;
+      const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates}), staying at ${data.accommodation} and interested in ${data.activity}. 
+      
+      Provide your response in JSON format (wrapped in markdown code block) with the following structure:
+      {
+        "briefing": "Concise welcome message",
+        "flights": [
+          { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
+        ],
+        "hotels": [
+          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Why Aura picked this" }
+        ],
+        "tours": [
+          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost" }
+        ],
+        "localSecret": "One high-end local hidden gem"
+      }
+      Provide 3 options for each category.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
       const intelligenceReport = await chatWithAura(messages);
