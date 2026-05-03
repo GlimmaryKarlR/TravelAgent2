@@ -73,6 +73,82 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
   const [selectedHotel, setSelectedHotel] = useState<number | null>(null);
   const [selectedExperiences, setSelectedExperiences] = useState<number[]>([]);
 
+  // Dynamic Synthesis Logic
+  const getSynthesizedSchedule = () => {
+    if (!intelligence || !intelligence.schedule) return [];
+    
+    const schedule = JSON.parse(JSON.stringify(intelligence.schedule));
+    
+    // Day 1 Logic: Flight -> Hotel Priority
+    if (schedule[0]) {
+      let day1Items = [...schedule[0].items];
+      
+      // Inject flight if selected
+      if (selectedFlight !== null) {
+        const flight = intelligence.flights[selectedFlight];
+        const flightItem = {
+          time: "Arrival",
+          activity: `Arrive via ${flight.carrier}`,
+          location: "International Airport",
+          status: "booked",
+          type: "flight",
+          personalizedNote: "Expedited immigration protocol active. Your concierge will meet you at the bridge.",
+          lat: day1Items[0]?.lat || 0,
+          lng: day1Items[0]?.lng || 0
+        };
+        day1Items = day1Items.filter(i => i.type !== 'flight');
+        day1Items.unshift(flightItem);
+      }
+
+      // Inject hotel check-in immediately after flight
+      if (selectedHotel !== null) {
+        const hotel = intelligence.hotels[selectedHotel];
+        const hotelItem = {
+          time: "Check-in",
+          activity: `Elite Check-in: ${hotel.name}`,
+          location: hotel.name,
+          status: "booked",
+          type: "accommodation",
+          transitSummary: "20 min Private Chauffeur from Arrivals",
+          personalizedNote: "As you are arriving early, we have secured a priority suite refresh. Rest before your first event.",
+          selectionReason: "Strategy: Centralizing base at this location optimizes all subsequent museum and dining transit.",
+          lat: day1Items[0]?.lat || 0,
+          lng: day1Items[0]?.lng || 0
+        };
+        
+        // Remove existing accommodation items
+        day1Items = day1Items.filter(i => i.type !== 'accommodation');
+        
+        const landingIdx = day1Items.findIndex(i => i.type === 'flight' || i.activity.toLowerCase().includes('arrive'));
+        if (landingIdx !== -1) {
+          day1Items.splice(landingIdx + 1, 0, hotelItem);
+        } else {
+          day1Items.unshift(hotelItem);
+        }
+      }
+      
+      schedule[0].items = day1Items;
+    }
+
+    // Filter Experiences: Only show experiences that match selected IDs (or core logistics)
+    return schedule.map((day: any) => ({
+      ...day,
+      items: day.items.filter((item: any) => {
+        if (['flight', 'accommodation', 'dining', 'transit'].includes(item.type)) return true;
+        // Check if this activity matches one of the selected tours
+        const isSelectedTour = intelligence.tours?.some((t: any, idx: number) => 
+          selectedExperiences.includes(idx) && 
+          (t.name.toLowerCase().includes(item.activity.toLowerCase()) || item.activity.toLowerCase().includes(t.name.toLowerCase()))
+        );
+        // If no experiences are selected yet, show the proposed ones
+        if (selectedExperiences.length === 0) return true;
+        return isSelectedTour;
+      })
+    }));
+  };
+
+  const currentSchedule = getSynthesizedSchedule();
+
   const startBooking = (id: string, type: 'flight' | 'hotel' | 'tour', data: any) => {
     // If trip dates are generic, ask for refinement
     if (!latestTrip.dates || latestTrip.dates.includes('Aura') || latestTrip.dates.includes('Active')) {
@@ -322,23 +398,22 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
                 {/* Daily Itinerary */}
                 {intelligence.schedule && (
                   <div className="space-y-8 pt-6 border-t border-white/5">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col items-center gap-4">
                       <div className="flex items-center gap-2 text-white/40">
-                        <Calendar size={14} />
+                        <Calendar size={14} className="text-gold" />
                         <span className="text-[9px] uppercase font-black tracking-widest">Proposed Itinerary</span>
                       </div>
-                      <div className="flex flex-wrap justify-center gap-2 items-center w-full mt-4">
-                        {intelligence.schedule.map((day: any, idx: number) => (
+                      <div className="flex flex-wrap justify-center gap-2 items-center w-full">
+                        {currentSchedule.map((day: any, idx: number) => (
                           <button 
                             key={idx}
                             onClick={() => setActiveDayIdx(idx)}
-                            className={`px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black transition-all ${
+                            className={`px-6 py-2.5 rounded-xl flex items-center gap-2 text-[10px] font-black transition-all ${
                               activeDayIdx === idx 
-                                ? 'bg-gold text-dark shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+                                ? 'bg-white text-dark shadow-[0_20px_40px_rgba(255,255,255,0.1)]' 
                                 : 'bg-white/5 text-white/30 border border-white/10 hover:border-white/30'
                             }`}
                           >
-                            <Calendar size={10} />
                             Day {idx + 1}
                           </button>
                         ))}
@@ -347,11 +422,11 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
 
                     <div className="space-y-6">
                       <div className="glass-panel p-2 border-white/10!">
-                        <ItineraryMap items={intelligence.schedule[activeDayIdx]?.items || []} />
+                        <ItineraryMap items={currentSchedule[activeDayIdx]?.items || []} />
                       </div>
 
                       <div className="space-y-6">
-                        {intelligence.schedule[activeDayIdx]?.items.map((item: any, i: number) => (
+                        {currentSchedule[activeDayIdx]?.items.map((item: any, i: number) => (
                           <div key={i} className="relative pl-10 group">
                             <div className="absolute left-[13px] top-6 bottom-0 w-[1px] bg-white/5 group-last:hidden" />
                             <div className={`absolute left-0 top-0 w-7 h-7 rounded-full flex items-center justify-center border text-[10px] font-black ${
