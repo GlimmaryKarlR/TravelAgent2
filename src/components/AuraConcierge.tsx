@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Sparkles, User, ShieldCheck, Landmark, MapPin } from 'lucide-react';
+import { Send, Sparkles, User, ShieldCheck, Landmark, MapPin, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { chatWithAura } from '../lib/gemini';
 import { Message } from '../types';
+import { collection, query, where, orderBy, limit, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db, auth } from '../lib/firebase';
 
 export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
   const [messages, setMessages] = useState<Message[]>([
@@ -16,7 +18,23 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [latestTrip, setLatestTrip] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!auth.currentUser) return;
+    const q = query(
+      collection(db, 'trips'), 
+      where('userId', '==', auth.currentUser.uid), 
+      orderBy('createdAt', 'desc'), 
+      limit(1)
+    );
+    return onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        setLatestTrip({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -32,14 +50,69 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
     setInput('');
     setIsTyping(true);
 
-    const response = await chatWithAura([...messages, userMsg]);
-    
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: response,
-      timestamp: Date.now()
-    }]);
-    setIsTyping(false);
+    try {
+      const tripContext = latestTrip ? `
+        ACTIVE TRIP DETAILS:
+        - Destination: ${latestTrip.destination}
+        - Dates: ${latestTrip.dates}
+        - Current Intelligence (JSON): ${latestTrip.intelligenceReport}
+      ` : "No active trip found.";
+
+      const systemPrompt = {
+        role: 'user' as const,
+        content: `System Instructions: You are Aura, the elite AI travel concierge. 
+        ${tripContext}
+        
+        Modification Protocol:
+        If the user requests a change to their trip (booking a hotel, changing dates, adding an activity, etc.), respond naturally and THEN include a specific update block at the end of your message.
+        
+        Update Block Format (STRICT):
+        [TRIP_UPDATE]
+        {
+          "updates": {
+            "destination": "new destination if changed",
+            "dates": "new dates if changed",
+            "intelligenceReport": "A FULLY UPDATED JSON string that incorporates the changes into the existing report structure."
+          }
+        }
+        [/TRIP_UPDATE]
+        
+        Your tone is hyper-competent and refined.`,
+        timestamp: Date.now()
+      };
+
+      const response = await chatWithAura([systemPrompt, ...messages, userMsg]);
+      
+      let finalContent = response;
+      const updateMatch = response.match(/\[TRIP_UPDATE\]([\s\S]*?)\[\/TRIP_UPDATE\]/);
+      
+      if (updateMatch && latestTrip && auth.currentUser) {
+        try {
+          const updateData = JSON.parse(updateMatch[1]).updates;
+          const cleanUpdate: any = { updatedAt: serverTimestamp() };
+          if (updateData.destination) cleanUpdate.destination = updateData.destination;
+          if (updateData.dates) cleanUpdate.dates = updateData.dates;
+          if (updateData.intelligenceReport) cleanUpdate.intelligenceReport = updateData.intelligenceReport;
+          
+          await updateDoc(doc(db, 'trips', latestTrip.id), cleanUpdate);
+          
+          // Hide the raw JSON from the user and replace with a clean confirmation
+          finalContent = response.replace(/\[TRIP_UPDATE\][\s\S]*?\[\/TRIP_UPDATE\]/, "\n\n*Protocol Updated: Itinerary Synchronized.*");
+        } catch (e) {
+          console.error("Failed to parse or apply Aura update", e);
+        }
+      }
+      
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: finalContent,
+        timestamp: Date.now()
+      }]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
