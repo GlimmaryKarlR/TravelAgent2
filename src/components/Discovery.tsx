@@ -95,7 +95,7 @@ export default function Discovery() {
                   className="group relative h-[500px] rounded-[2.5rem] overflow-hidden glass-panel border-white/10! shadow-2xl curse-pointer"
                 >
                   <img 
-                    src={`https://source.unsplash.com/featured/?${encodeURIComponent(exp.imageKeyword || exp.destination)},luxury`}
+                    src={`https://loremflickr.com/800/1000/${encodeURIComponent(exp.imageKeyword || exp.destination)},luxury,landscape?random=${i}`}
                     alt={exp.destination}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     referrerPolicy="no-referrer"

@@ -82,7 +82,7 @@ export default function ItineraryHub({ demoTrips = [] }: { demoTrips?: any[] }) 
         <>
           <div className="relative h-64 md:h-80 w-full mb-8">
             <img 
-              src={`https://loremflickr.com/1600/900/${encodeURIComponent(intelligence?.destinationImage || latestTrip.destination || 'luxury,travel')}?random=hero`}
+              src={`https://loremflickr.com/1600/900/${encodeURIComponent(intelligence?.destinationImage || latestTrip.destination || 'luxury,travel,resort')},vivid?random=hero`}
               className="w-full h-full object-cover"
               alt={latestTrip.destination}
               referrerPolicy="no-referrer"

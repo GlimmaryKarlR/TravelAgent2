@@ -7,37 +7,21 @@ import { chatWithAura } from '../lib/gemini';
 
 interface OnboardingProps {
   user: any;
+  initialData?: any;
   onComplete: (tripData?: any) => void;
   onCancel: () => void;
 }
 
-export default function NewTripOnboarding({ user, onComplete, onCancel }: OnboardingProps) {
-  const [step, setStep] = useState(1);
+export default function NewTripOnboarding({ user, initialData, onComplete, onCancel }: OnboardingProps) {
+  const [step, setStep] = useState(initialData ? 4 : 1);
   const [data, setData] = useState({
-    destination: '',
-    accommodation: '',
-    activity: '',
-    dates: ''
+    destination: initialData?.destination || '',
+    accommodation: initialData?.title || '',
+    activity: initialData?.vibe || '',
+    dates: 'Aura Premium Window'
   });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
-
-  useEffect(() => {
-    const handleStart = (e: any) => {
-      const exp = e.detail;
-      if (exp) {
-        setData({
-          destination: exp.destination,
-          accommodation: exp.vibe,
-          activity: 'Elite Exploration',
-          dates: 'Aura Premium Window'
-        });
-        setStep(1); // Reset to start but with data
-      }
-    };
-    window.addEventListener('START_ONBOARDING' as any, handleStart);
-    return () => window.removeEventListener('START_ONBOARDING' as any, handleStart);
-  }, []);
 
   const handleNext = () => {
     if (step < 4) setStep(step + 1);

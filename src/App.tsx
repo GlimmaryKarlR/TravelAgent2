@@ -19,8 +19,18 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('discovery');
   const [tier, setTier] = useState<'basic' | 'elite'>('elite');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [initialOnboardingData, setInitialOnboardingData] = useState<any>(null);
   const [isAlertActive, setIsAlertActive] = useState(false);
   const [demoTrips, setDemoTrips] = useState<any[]>([]);
+
+  useEffect(() => {
+    const handleStart = (e: any) => {
+      setInitialOnboardingData(e.detail);
+      setShowOnboarding(true);
+    };
+    window.addEventListener('START_ONBOARDING' as any, handleStart);
+    return () => window.removeEventListener('START_ONBOARDING' as any, handleStart);
+  }, []);
 
   const handleDemoLogin = () => {
     setUser({
@@ -74,11 +84,13 @@ export default function App() {
     return (
       <NewTripOnboarding 
         user={user}
+        initialData={initialOnboardingData}
         onComplete={(newTrip) => {
           if (newTrip && !auth.currentUser) {
             setDemoTrips([newTrip, ...demoTrips]);
           }
           setShowOnboarding(false);
+          setInitialOnboardingData(null);
           setActiveTab('itinerary');
         }}
         onCancel={() => setShowOnboarding(false)}
