@@ -32,7 +32,7 @@ export async function chatWithAura(messages: Message[]) {
   try {
     const ai = getAiClient();
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash-preview",
       contents: messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
