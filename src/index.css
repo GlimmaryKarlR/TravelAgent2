@@ -8,8 +8,10 @@
 
   --color-gold: #D4AF37;
   --color-gold-bright: #F9E29C;
-  --color-dark: #05070A;
-  --color-accent-blue: #2E5BFF;
+  --color-dark: #020617;
+  --color-navy: #0F172A;
+  --color-navy-light: #1E293B;
+  --color-accent-blue: #3B82F6;
 }
 
 @layer base {
@@ -20,21 +22,21 @@
 
 /* Frosted Glass Patterns */
 .glass-panel {
-  @apply bg-white/10 backdrop-blur-[20px] border border-white/10 rounded-[24px];
+  @apply bg-navy/60 backdrop-blur-[20px] border border-white/5 rounded-[24px];
 }
 
 .glass-card {
-  @apply bg-white/5 backdrop-blur-[15px] border border-white/10 rounded-2xl;
+  @apply bg-navy/40 backdrop-blur-[15px] border border-white/5 rounded-2xl;
 }
 
 .elite-glow {
-  @apply shadow-[0_0_20px_rgba(212,175,55,0.2)] border-gold/40!;
+  @apply shadow-[0_0_20px_rgba(212,175,55,0.15)] border-gold/30!;
 }
 
 /* Mesh Background Elements */
 .mesh-bg {
-  @apply absolute inset-0 z-[-1] overflow-hidden bg-[#05070A];
-  background: radial-gradient(circle at 10% 20%, rgba(20, 30, 48, 1) 0%, rgba(36, 59, 85, 1) 100%);
+  @apply absolute inset-0 z-[-1] overflow-hidden bg-dark;
+  background: radial-gradient(circle at 10% 20%, #0F172A 0%, #020617 100%);
 }
 
 .accent-sphere {

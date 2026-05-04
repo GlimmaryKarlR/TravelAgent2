@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ArrowRight, MapPin, Globe, Compass, Star } from 'lucide-react';
-import { chatWithAura } from '../lib/gemini';
+import { chatWithOdyAi } from '../lib/gemini';
 
 export default function Discovery() {
   const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -10,7 +10,7 @@ export default function Discovery() {
   const fetchRecommendations = async () => {
     setIsLoading(true);
     try {
-      const prompt = `Act as Aura, the elite concierge. Suggest 3 'Elite Expeditions' for ultra-high-net-worth travelers. 
+      const prompt = `Act as OdyAi, the elite expedition architect. Suggest 3 'Elite Expeditions' for ultra-high-net-worth travelers. 
       Mix iconic high-end destinations with one 'Ultra-Lavish' outlier.
       Destinations should be things like St. Barts, Courchevel, Maldives, Kyoto, or private islands in the Seychelles.
       One option MUST be extreme (e.g., private orbital flight, super-yacht expedition to Antarctica).
@@ -28,7 +28,7 @@ export default function Discovery() {
           }
         ]
       }`;
-      const res = await chatWithAura([{ role: 'user', content: prompt, timestamp: Date.now() }]);
+      const res = await chatWithOdyAi([{ role: 'user', content: prompt, timestamp: Date.now() }]);
       const jsonMatch = res.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
          setRecommendations(JSON.parse(jsonMatch[0]).expeditions);
@@ -74,7 +74,7 @@ export default function Discovery() {
           </div>
           <h1 className="text-5xl font-serif italic text-white leading-tight">Plan an amazing expedition.</h1>
           <p className="text-sm text-white/40 font-light leading-relaxed">
-            Aura tracks the most remote and exclusive destinations globally, reserved for the Vantage network.
+            OdyAi tracks the most remote and exclusive destinations globally, reserved for the Vantage network.
           </p>
           <button 
             onClick={() => (window as any).dispatchEvent(new CustomEvent('START_ONBOARDING'))}
@@ -89,7 +89,7 @@ export default function Discovery() {
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-[10px] uppercase font-black tracking-[0.3em] text-white/20 mb-2">Curated for You</h2>
-            <p className="text-2xl font-serif italic">Aura's Elite Selection</p>
+            <p className="text-2xl font-serif italic">OdyAi's Elite Selection</p>
           </div>
           <button onClick={fetchRecommendations} className="text-[10px] uppercase font-black tracking-widest text-gold/60 border-b border-gold/20 pb-1">Refresh Grid</button>
         </div>

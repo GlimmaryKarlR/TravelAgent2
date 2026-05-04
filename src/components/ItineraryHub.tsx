@@ -86,12 +86,12 @@ export default function ItineraryHub({
       if (selectedFlight !== null) {
         const flight = intelligence.flights[selectedFlight];
         const flightItem = {
-          time: "Arrival",
-          activity: `Arrive via ${flight.carrier}`,
-          location: "International Airport",
+          time: flight.departureTime || "Arrival",
+          activity: `Arrive via ${flight.carrier} ${flight.option}`,
+          location: flight.arrivalAirport || "International Airport",
           status: "booked",
           type: "flight",
-          personalizedNote: "Expedited immigration protocol active. Your concierge will meet you at the bridge.",
+          personalizedNote: `Flight protocol established for ${flight.date || 'your arrival'}. Expedited immigration protocol active. Your concierge will meet you at the bridge.`,
           lat: day1Items[0]?.lat || 0,
           lng: day1Items[0]?.lng || 0
         };
@@ -167,7 +167,7 @@ export default function ItineraryHub({
 
   const startBooking = (id: string, type: 'flight' | 'hotel' | 'tour', data: any) => {
     // If trip dates are generic, ask for refinement
-    if (!latestTrip.dates || latestTrip.dates.includes('Aura') || latestTrip.dates.includes('Active')) {
+    if (!latestTrip.dates || latestTrip.dates.includes('OdyAi') || latestTrip.dates.includes('Active')) {
       setRefiningBooking({ id, type, data });
       return;
     }
@@ -337,23 +337,38 @@ export default function ItineraryHub({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {intelligence.flights?.map((f: any, i: number) => (
                       <div key={i} className={`glass-panel p-5 space-y-4 transition-colors ${selectedFlight === i ? 'border-gold/30 bg-gold/5' : 'border-white/10! hover:bg-white/[0.03]'}`}>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-start">
                           <div>
                             <p className="text-[8px] text-gold uppercase font-black tracking-tighter mb-1">{f.carrier}</p>
-                            <h4 className="text-xs font-bold">{f.option}</h4>
+                            <h4 className="text-sm font-bold">{f.option}</h4>
+                            <div className="flex flex-col gap-1 mt-2">
+                              <div className="flex items-center gap-2 text-[10px] text-white/60">
+                                <span className="font-mono">{f.departureAirport || 'Origin'}</span>
+                                <ChevronRight size={10} className="text-white/20" />
+                                <span className="font-mono">{f.arrivalAirport || 'Destination'}</span>
+                              </div>
+                              <div className="text-[9px] text-white/30 font-medium tracking-tight">
+                                {f.date || 'TBD'} • {f.departureTime || 'TBD'}
+                              </div>
+                            </div>
                           </div>
-                          <span className="text-xs font-mono text-white/40">{f.price}</span>
+                          <div className="text-right">
+                             <div className="text-xs font-mono text-white/40">{f.price}</div>
+                             <div className={`text-[7px] font-black uppercase mt-1 ${f.confidence === 'High' ? 'text-green-500' : 'text-amber-500'}`}>
+                               Real-Time: {f.confidence}
+                             </div>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pt-2">
                           <button 
                             onClick={() => setSelectedFlight(i)}
-                            className={`flex-1 py-2 rounded-lg text-[9px] uppercase font-bold tracking-widest border transition-all ${
+                            className={`flex-1 py-2.5 rounded-xl text-[9px] uppercase font-black tracking-[0.2em] border transition-all ${
                               selectedFlight === i 
                                 ? 'bg-gold text-dark border-gold shadow-[0_0_20px_rgba(212,175,55,0.2)]'
                                 : 'bg-gold/10 text-gold border-gold/20 hover:bg-gold/20'
                             }`}
                           >
-                            {selectedFlight === i ? 'Selected Protocol' : 'Select'}
+                            {selectedFlight === i ? 'Protocol Active' : 'Select Flight'}
                           </button>
                         </div>
                       </div>
@@ -542,7 +557,7 @@ export default function ItineraryHub({
                           {bookingStatus['global-reserve'] !== 'confirmed' && <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />}
                         </span>
                         <span className="text-[8px] opacity-40 lowercase tracking-widest font-normal italic">
-                          This authorizes Aura to utilize your stored vaulted assets for all primary bookings.
+                          This authorizes OdyAi to utilize your stored vaulted assets for all primary bookings.
                         </span>
                       </button>
                     </div>
@@ -595,7 +610,7 @@ export default function ItineraryHub({
           </div>
           <div className="space-y-2">
             <h2 className="text-xl font-serif italic">No Active Expeditions.</h2>
-            <p className="text-xs text-white/30 max-w-[200px]">Aura is ready to synthesize your next journey.</p>
+            <p className="text-xs text-white/30 max-w-[200px]">OdyAi is ready to synthesize your next journey.</p>
           </div>
           <button 
             onClick={() => (window as any).dispatchEvent(new CustomEvent('START_ONBOARDING'))}
@@ -638,7 +653,7 @@ export default function ItineraryHub({
                 />
               </div>
               <p className="text-[9px] text-white/30 italic text-center leading-relaxed px-4">
-                "Aura will automatically scan for optimal inventory and handle all verification protocols."
+                "OdyAi will automatically scan for optimal inventory and handle all verification protocols."
               </p>
             </div>
 

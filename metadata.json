@@ -1,6 +1,6 @@
 {
-  "name": "Nomad Elite",
-  "description": "A premium AI travel concierge and safety officer for elite global travelers.",
+  "name": "Odyssey",
+  "description": "An elite AI expedition architect and safety officer for global travelers.",
   "requestFramePermissions": ["geolocation", "microphone"],
-  "majorCapabilities": ["AI Travel Planning", "Emergency Support", "Live Translation"]
+  "majorCapabilities": ["AI Expedition Planning", "OdyAi Concierge", "Sovereign Asset Vault"]
 }

@@ -2,17 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, Sparkles, User, ShieldCheck, Landmark, MapPin, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { chatWithAura } from '../lib/gemini';
+import { chatWithOdyAi } from '../lib/gemini';
 import { Message } from '../types';
 import { collection, query, where, orderBy, limit, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 
-export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
+export default function OdyAiConcierge({ tier }: { tier: 'basic' | 'elite' }) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Welcome to **Nomad Elite**, Mr. Traveler. I am **Aura**, your dedicated concierge. 
-      ${tier === 'elite' ? "As an **Elite** member, you have unrestricted access to our global private network. How may I assist your journey today?" : "How may I help you plan your next adventure?"}`,
+      content: `Welcome to **Odyssey**, Mr. Traveler. I am **OdyAi**, your dedicated expedition architect. 
+      ${tier === 'elite' ? "As an **Elite** resident, you have unrestricted access to our global private intelligence network. How may I architect your journey today?" : "How may I help you plan your next adventure?"}`,
       timestamp: Date.now()
     }
   ]);
@@ -52,19 +52,19 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
 
     try {
       const tripContext = latestTrip ? `
-        ACTIVE TRIP DETAILS:
+        ACTIVE EXPEDITION DETAILS:
         - Destination: ${latestTrip.destination}
         - Dates: ${latestTrip.dates}
         - Current Intelligence (JSON): ${latestTrip.intelligenceReport}
-      ` : "No active trip found.";
+      ` : "No active expedition found.";
 
       const systemPrompt = {
         role: 'user' as const,
-        content: `System Instructions: You are Aura, the elite AI travel concierge. 
+        content: `System Instructions: You are OdyAi, the elite AI expedition architect. 
         ${tripContext}
         
         Modification Protocol:
-        If the user requests a change to their trip (booking a hotel, changing dates, adding an activity, etc.), respond naturally and THEN include a specific update block at the end of your message.
+        If the user requests a change to their expedition (booking a hotel, changing dates, adding an activity, etc.), respond naturally and THEN include a specific update block at the end of your message.
         
         Update Block Format (STRICT):
         [TRIP_UPDATE]
@@ -77,11 +77,11 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
         }
         [/TRIP_UPDATE]
         
-        Your tone is hyper-competent and refined.`,
+        Your tone is hyper-competent and architecturally refined.`,
         timestamp: Date.now()
       };
 
-      const response = await chatWithAura([systemPrompt, ...messages, userMsg]);
+      const response = await chatWithOdyAi([systemPrompt, ...messages, userMsg]);
       
       let finalContent = response;
       const updateMatch = response.match(/\[TRIP_UPDATE\]([\s\S]*?)\[\/TRIP_UPDATE\]/);
@@ -97,9 +97,9 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
           await updateDoc(doc(db, 'trips', latestTrip.id), cleanUpdate);
           
           // Hide the raw JSON from the user and replace with a clean confirmation
-          finalContent = response.replace(/\[TRIP_UPDATE\][\s\S]*?\[\/TRIP_UPDATE\]/, "\n\n*Protocol Updated: Itinerary Synchronized.*");
+          finalContent = response.replace(/\[TRIP_UPDATE\][\s\S]*?\[\/TRIP_UPDATE\]/, "\n\n*Protocol Updated: Expedition Synchronized.*");
         } catch (e) {
-          console.error("Failed to parse or apply Aura update", e);
+          console.error("Failed to parse or apply OdyAi update", e);
         }
       }
       
@@ -124,9 +124,9 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
             <Sparkles size={20} />
           </div>
           <div>
-            <h1 className="font-serif italic text-xl font-medium tracking-tight">Aura Concierge</h1>
+            <h1 className="font-serif italic text-xl font-medium tracking-tight">OdyAi Concierge</h1>
             <p className="text-[10px] uppercase tracking-[0.2em] text-gold/60 font-bold">
-              {tier === 'elite' ? 'Private Access' : 'Digital Assistant'}
+              {tier === 'elite' ? 'Resident Intelligence' : 'Digital Assistant'}
             </p>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function AuraConcierge({ tier }: { tier: 'basic' | 'elite' }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask Aura anything..."
+            placeholder="Ask OdyAi anything..."
             className="flex-1 bg-transparent py-4 text-sm focus:outline-none placeholder:text-white/20 font-medium"
           />
           <button

@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY_DEV || "" });
 
 export interface TourSegment {
   title: string;
@@ -20,22 +20,22 @@ export interface TourContent {
 
 export async function generateTourContent(location: string, activity: string): Promise<TourContent> {
   const prompt = `
-    You are an elite historical guide for Nomad Elite. 
+    You are OdyAi, the elite expedition architect and historical guide for Odyssey. 
     Generate a detailed, sophisticated audio tour for: ${activity} in ${location}.
     
-    The content should feel like a premium documentary (History Channel style).
+    The content should feel like a premium documentary narrated by a hyper-competent AI.
     Include 3-4 specific "stops" or segments that can be navigated via GPS.
     
     Format the response as a JSON object:
     {
       "locationName": "name",
-      "introduction": "A captivating 30-second intro",
+      "introduction": "A captivating 30-second intro as OdyAi",
       "segments": [
         {
-          "title": "Segment name",
-          "description": "Rich narrative content for this stop",
-          "historicalFact": "A deep-cut historical fact",
-          "navigationTip": "Where to walk next",
+          "title": "Segment Name",
+          "description": "Rich narrative intelligence for this stop",
+          "historicalFact": "A deep-cut historical archive fact",
+          "navigationTip": "Strategic navigation instructions",
           "estimatedDuration": "mins"
         }
       ],
@@ -57,17 +57,17 @@ export async function generateTourContent(location: string, activity: string): P
     // Fallback content
     return {
       locationName: activity,
-      introduction: `Welcome to ${activity}. I am your Nomad Elite guide.`,
+      introduction: `Welcome to ${activity}. I am OdyAi, your expedition architect.`,
       segments: [
         {
-          title: "Introduction to the Site",
-          description: `You are standing at ${activity}. This location holds immense cultural significance.`,
+          title: "Expedition Initialization",
+          description: `We have arrived at ${activity}. Calibrating local intelligence...`,
           historicalFact: "The architecture reflects centuries of evolution.",
-          navigationTip: "Walk towards the main entrance to start.",
+          navigationTip: "Advance towards the main entrance to start protocol.",
           estimatedDuration: "5 mins"
         }
       ],
-      closing: "Thank you for exploring with Nomad Elite."
+      closing: "Odyssey protocol terminated."
     };
   }
 }

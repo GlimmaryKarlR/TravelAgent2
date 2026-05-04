@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Map, BookOpen, Globe, Menu, X, Plus, Lock, CalendarDays } from 'lucide-react';
-import AuraConcierge from './components/AuraConcierge';
+import OdyAiConcierge from './components/OdyAiConcierge';
 import ItineraryHub from './components/ItineraryHub';
 import ScheduleView from './components/ScheduleView';
 import BookingHub from './components/BookingHub';
@@ -36,9 +36,9 @@ export default function App() {
   const handleDemoLogin = () => {
     setUser({
       uid: 'demo-user-123',
-      displayName: 'Elite Traveler',
+      displayName: 'Elite Resident',
       photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-      email: 'elite@nomad.com'
+      email: 'elite@odyssey.com'
     });
   };
 
@@ -71,7 +71,7 @@ export default function App() {
       <div className="h-screen bg-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Sparkles className="text-gold animate-pulse" size={32} />
-          <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/40">Synchronizing Vantage...</p>
+          <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/40">Synchronizing Odyssey...</p>
         </div>
       </div>
     );
@@ -103,7 +103,7 @@ export default function App() {
     { id: 'discovery', label: 'Explore', icon: Globe },
     { id: 'itinerary', label: 'Journey', icon: Map },
     { id: 'schedule', label: 'Schedule', icon: CalendarDays },
-    { id: 'concierge', label: 'Aura', icon: Sparkles },
+    { id: 'concierge', label: 'OdyAi', icon: Sparkles },
     { id: 'safety', label: 'Bookings', icon: BookOpen },
     { id: 'vault', label: 'Vault', icon: Lock },
   ];
@@ -127,7 +127,7 @@ export default function App() {
           >
             <div className="flex items-center gap-3">
               <Sparkles size={14} className="animate-pulse" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em]">Aura Update: Weather shifts in Tokyo. Rescheduling activities.</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em]">OdyAi Update: Intelligent routing optimization in progress.</p>
             </div>
             <button onClick={() => setIsAlertActive(false)} className="hover:opacity-70 transition-opacity">
               <X size={16} />
@@ -140,23 +140,23 @@ export default function App() {
       <header className="px-8 pt-8 pb-4 flex justify-between items-center z-10">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tighter italic leading-none font-serif">NOMAD.</h1>
-            <p className="text-[10px] uppercase tracking-widest opacity-60 font-bold">Elite Travel Intelligence</p>
+            <h1 className="text-2xl font-bold tracking-tighter italic leading-none font-serif text-white">ODYSSEY.</h1>
+            <p className="text-[10px] uppercase tracking-widest opacity-60 font-bold text-gold">Elite Expedition Architect</p>
           </div>
           <div className="h-8 w-[1px] bg-white/20 mx-2"></div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold opacity-40 uppercase tracking-wider">Welcome</span>
+            <span className="text-[10px] font-bold opacity-40 uppercase tracking-wider">Resident</span>
             <span className="text-sm font-semibold tracking-tight">{user.displayName?.split(' ')[0] || 'Traveler'}</span>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setShowOnboarding(true)}
-            className="w-10 h-10 glass-panel flex items-center justify-center rounded-xl border-white/20! text-gold hover:bg-gold/10 transition-colors"
+            className="w-10 h-10 glass-panel flex items-center justify-center rounded-xl border-white/5 text-gold hover:bg-gold/10 transition-colors"
           >
             <Plus size={20} />
           </button>
-          <div className="w-10 h-10 glass-panel flex items-center justify-center rounded-full border-white/20!">
+          <div className="w-10 h-10 glass-panel flex items-center justify-center rounded-full border-white/5">
             <img src={user.photoURL || ''} alt="Profile" className="w-7 h-7 rounded-full shadow-inner" />
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function App() {
               className="h-full w-full absolute inset-0"
             >
               {activeTab === 'discovery' && <Discovery />}
-              {activeTab === 'concierge' && <AuraConcierge tier={tier} />}
+              {activeTab === 'concierge' && <OdyAiConcierge tier={tier} />}
               {activeTab === 'itinerary' && (
                 <ItineraryHub 
                   demoTrips={demoTrips} 

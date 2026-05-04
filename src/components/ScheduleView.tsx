@@ -106,7 +106,7 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
         <CalendarDays size={48} className="text-white/10" />
         <div className="space-y-2">
           <h2 className="text-xl font-serif italic">Timeline Silent.</h2>
-          <p className="text-xs text-white/30">Generate an expedition to initialize Aura's scheduler.</p>
+          <p className="text-xs text-white/30">Generate an expedition to initialize OdyAi's scheduler.</p>
         </div>
       </div>
     );
@@ -249,8 +249,8 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
             <Sparkles size={18} />
           </div>
           <div>
-            <h5 className="text-[10px] font-black uppercase tracking-widest text-gold">Aura Live Recommendation</h5>
-            <p className="text-[11px] text-white/70 leading-snug">Weather patterns optimize for rooftop dining at 20:30.</p>
+            <h5 className="text-[10px] font-black uppercase tracking-widest text-gold">OdyAi Resident Intelligence</h5>
+            <p className="text-[11px] text-white/70 leading-snug">Atmospheric optimization suggests rooftop dining at 20:30.</p>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin, Banknote, DollarSign, Globe as GlobeIcon } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
-import { chatWithAura } from '../lib/gemini';
+import { chatWithOdyAi } from '../lib/gemini';
 import Globe from './Globe';
 import LuxuryCalendar from './Calendar';
 
@@ -32,11 +32,11 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
   };
 
   const statuses = [
-    "Scanning global flight corridors...",
-    "Verifying private villa availability...",
-    "Checking diplomatic clearance for landmarks...",
-    "Securing biometric vault signatures...",
-    "Optimizing for carbon-neutral transport..."
+    "Plotting global expedition corridors...",
+    "Verifying residential enclave availability...",
+    "Authenticating diplomatic clearance protocols...",
+    "Securing sovereign vault signatures...",
+    "Optimizing architectural transit routes..."
   ];
 
   const handleSubmit = async () => {
@@ -50,7 +50,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
     }, 1200);
 
     try {
-      const budgetLabel = ["Budget-Conscious", "Comfort", "Premium", "Luxury", "Ultra-High-Net-Worth"][data.budget - 1];
+      const budgetLabel = ["Budget-Conscious", "Comfort", "Premium", "Luxury", "Odyssey Tier"][data.budget - 1];
       
       // Calculate duration from dates string if possible
       let dayCount = 4; // Default
@@ -71,66 +71,77 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         }
       }
 
-      const prompt = `Act as Aura, the elite concierge. Plan a luxury travel briefing for a user going to ${data.destination} (${data.dates || 'Flexible Dates'}).
-      Budget Tier: ${budgetLabel} (${data.budget}/5).
-      Preferred Accommodation: ${data.accommodation}. 
-      Interested in: ${data.activity}. 
+      const prompt = `Act as OdyAi, the elite expedition architect. Design a sophisticated expedition briefing for a traveler going to ${data.destination} (${data.dates || 'Flexible Dates'}).
+      Budget Strategy: ${budgetLabel} (${data.budget}/5).
+      Architectural Focus: ${data.accommodation}. 
+      Expedition Goals: ${data.activity}. 
+      
+      CRITICAL: Use your integrated Google Search tool to find REAL current flight options and hotel availability for ${data.destination} during ${data.dates}.
       
       IMPORTANT: You MUST generate a daily itinerary for EXACTLY ${dayCount} days. 
-      The trip duration is ${dayCount} days based on the user's selection: ${data.dates || 'Flexible Window'}.
+      The expedition duration is ${dayCount} days based on the resident's selection: ${data.dates || 'Flexible Window'}.
       Each day should be a separate entry in the "schedule" array.
       Each item in the schedule MUST include geographic coordinates (latitude and longitude) for the ${data.destination} area.
       
-      LOGIC REQUIREMENTS:
-      1. Spatial-Temporal Optimization: Group activities geographically to minimize transit. Do NOT schedule events on opposite sides of the city on the same day.
-      2. Load Balancing: Evenly distribute activities across all ${dayCount} days. Avoid clustering 5 events on Day 1 and 0 on Day 2.
-      3. Timing Intelligence: Schedule events based on "Golden Hour" logic (e.g., deck sunrises, rooftop sunsets, museum low-traffic hours).
-      4. Transit-Aware: Explicitly calculate travel time between every venue. If an early morning excursion is chosen, the prior night's dining should be nearby.
-      5. Packages: Propose 2-3 "Luxury Packages" (Experience bundles) that the user can choose from (e.g., "The Gastronomic Route", "The Adventure Protocol").
-      6. Personalization: Add tips for the user (e.g., "Get sleep on the plane as arrival is late").
+      ARCHITECTURAL REQUIREMENTS:
+      1. Spatial-Temporal Optimization: Group activities geographically to minimize transit. 
+      2. Flow Balance: Evenly distribute experiences across all ${dayCount} days.
+      3. Atmospheric Intelligence: Schedule events based on "Golden Hour" logic.
+      4. Logistics Precision: Explicitly calculate travel time between every venue. 
+      5. Specialized Bundles: Propose 2-3 "Expedition Protocols" (Experience bundles).
+      6. Residential Advice: Add specific notes for the resident.
 
       Provide your response in JSON format (wrapped in markdown code block) with the following structure:
       {
-        "briefing": "Concise welcome message explaining the logic of the selected route based on transit and timing",
+        "briefing": "Concise architectural overture explaining the logic of the selected route",
         "destinationImage": "2-3 extremely BROAD high-quality tags separated by commas (e.g., 'tokyo,skyline' or 'island,resort').",
         "packages": [
-          { "id": "p1", "name": "Package Name", "description": "Short explanation of the vibe", "highlights": ["Highlight 1", "Highlight 2"] }
+          { "id": "p1", "name": "Protocol Name", "description": "Logic summary", "highlights": ["Point 1", "Point 2"] }
         ],
         "flights": [
-          { "option": "Flight Number/Details", "price": "Price", "confidence": "High/Med", "carrier": "Airline" }
+          { 
+            "option": "Flight Number (e.g. AF275)", 
+            "price": "Price", 
+            "confidence": "High/Med", 
+            "carrier": "Carrier Name",
+            "departureAirport": "Airport Name (CODE)",
+            "arrivalAirport": "Airport Name (CODE)",
+            "departureTime": "HH:MM",
+            "date": "YYYY-MM-DD"
+          }
         ],
         "hotels": [
-          { "name": "Hotel Name", "details": "Phone/Contact", "price": "per night", "reason": "Detailed explanation of why Aura picked this considering transit/convenience", "imageKeyword": "2 simple tags separated by commas (e.g., 'pool,resort' or 'suite,luxury')." }
+          { "name": "Enclave Name", "details": "Contact details", "price": "per evening", "reason": "Architectural logic for selection", "imageKeyword": "2 simple tags (e.g., 'villa,pool')." }
         ],
         "tours": [
-          { "name": "Experience Name", "contact": "Phone/Link", "access": "Elite/Public", "cost": "Cost", "reason": "Detailed logic for selection", "imageKeyword": "2 simple tags separated by commas (e.g., 'yacht,ocean' or 'helicopter,tour')." }
+          { "name": "Protocol Experience", "contact": "Official Link", "access": "Elite/Restricted", "cost": "Investment", "reason": "Strategic logic", "imageKeyword": "2 tags (e.g., 'yacht,exclusive')." }
         ],
         "schedule": [
           { 
             "day": 1,
-            "date": "Full date string",
+            "date": "Full date",
             "items": [
               { 
                 "time": "09:00", 
-                "activity": "Activity Name", 
-                "status": "booked", 
-                "type": "dining/activity/transit", 
-                "location": "Exact venue", 
+                "activity": "Experience Name", 
+                "status": "proposed/confirmed", 
+                "type": "residential/expedition/transit", 
+                "location": "Venue", 
                 "lat": 0.0, 
                 "lng": 0.0,
-                "transitSummary": "Transit method and time from previous location",
-                "personalizedNote": "Aura's specific advice for this moment",
-                "selectionReason": "Why this time and place works best in the overall flow"
+                "transitSummary": "Transit protocol",
+                "personalizedNote": "OdyAi intelligence note",
+                "selectionReason": "Strategic placement logic"
               }
             ]
           }
         ],
-        "localSecret": "One high-end local hidden gem"
+        "localSecret": "One high-end local hidden intelligence point"
       }
-      Provide 3 options for each category (flights, hotels, tours). Keep image tags simple, BROAD, and comma-separated to ensure high-quality matching. AVOID specific venue names in keywords.`;
+      Provide 3 options for each category. Use REAL data from search results.`;
       
       const messages = [{ role: 'user' as const, content: prompt, timestamp: Date.now() }];
-      const intelligenceReport = await chatWithAura(messages);
+      const intelligenceReport = await chatWithOdyAi(messages);
 
       const tripData = {
         userId: user.uid,
@@ -325,12 +336,12 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
               className="flex items-center gap-3 text-gold font-mono text-[10px] uppercase tracking-[0.3em] bg-gold/5 px-6 py-3 rounded-full border border-gold/20 shadow-lg"
             >
               <div className="w-2 h-2 rounded-full bg-gold animate-ping" />
-              {loadingStatus || 'Aura is calculating your optimal route...'}
+              {loadingStatus || 'OdyAi is calculating your optimal architectural route...'}
             </motion.div>
           )}
           <div className="flex items-center gap-3 text-white/20">
             <Sparkles size={14} className="animate-pulse" />
-            <span className="text-[11px] uppercase font-black tracking-[0.4em]">{isLoading ? 'Synthesizing Expedition' : 'Aura AI Intelligence Ready'}</span>
+            <span className="text-[11px] uppercase font-black tracking-[0.4em]">{isLoading ? 'Synthesizing Expedition' : 'OdyAi Intelligence Ready'}</span>
           </div>
         </div>
       </footer>
