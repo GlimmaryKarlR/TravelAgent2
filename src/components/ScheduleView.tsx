@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CalendarDays, Clock, MapPin, Sparkles, CheckCircle2, Circle, AlertCircle, ChevronRight, Utensils, Plane, Landmark } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Sparkles, CheckCircle2, Circle, AlertCircle, ChevronRight, Utensils, Plane, Landmark, Play, ShieldCheck } from 'lucide-react';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
+import AudioTourAgent from './AudioTourAgent';
+import PaymentModal from './PaymentModal';
 
 interface ScheduleItem {
   time: string;
   activity: string;
   status: 'booked' | 'proposed' | 'alert';
-  type: 'flight' | 'tour' | 'dining' | 'hotel' | 'other';
+  type: 'flight' | 'tour' | 'dining' | 'hotel' | 'other' | 'activity' | 'accommodation';
   location?: string;
   day?: number;
 }
@@ -17,6 +19,8 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
   const [trips, setTrips] = useState<any[]>(demoTrips);
   const [loading, setLoading] = useState(!demoTrips.length);
   const [selectedDay, setSelectedDay] = useState(1);
+  const [activeTour, setActiveTour] = useState<{ location: string, activity: string } | null>(null);
+  const [bookingItem, setBookingItem] = useState<any | null>(null);
 
   useEffect(() => {
     if (!auth.currentUser) {
@@ -110,6 +114,24 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
 
   return (
     <div className="h-full flex flex-col bg-dark overflow-hidden">
+      <AnimatePresence>
+        {activeTour && (
+          <AudioTourAgent 
+            location={activeTour.location} 
+            activity={activeTour.activity} 
+            onClose={() => setActiveTour(null)} 
+          />
+        )}
+        {bookingItem && (
+          <PaymentModal 
+            tripId={latestTrip.id}
+            item={{...bookingItem, day: selectedDay}}
+            onClose={() => setBookingItem(null)}
+            onSuccess={() => setBookingItem(null)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Day Selector */}
       <div className="px-8 pt-8 pb-6 border-b border-white/5 flex gap-4 overflow-x-auto no-scrollbar">
         {(confirmedSchedule || intelligence?.schedule || [1, 2, 3]).map((_, idx) => {
@@ -177,12 +199,35 @@ export default function ScheduleView({ demoTrips = [] }: { demoTrips?: any[] }) 
                     </div>
 
                     <h4 className="text-sm font-bold tracking-tight mb-1 text-white/90">{item.activity}</h4>
-                    {item.location && (
-                      <div className="flex items-center gap-1 text-[10px] text-white/30 font-medium italic">
-                        <MapPin size={10} />
-                        <span>{item.location}</span>
-                      </div>
-                    )}
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      {item.location && (
+                        <div className="flex items-center gap-1 text-[10px] text-white/30 font-medium italic">
+                          <MapPin size={10} />
+                          <span>{item.location}</span>
+                        </div>
+                      )}
+
+                      {(item.type === 'tour' || item.type === 'activity') && (
+                        <button 
+                          onClick={() => setActiveTour({ location: item.location || latestTrip.destination, activity: item.activity })}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-white/60 text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                        >
+                          <Play size={10} fill="currentColor" />
+                          Start Audio Tour
+                        </button>
+                      )}
+
+                      {item.status === 'proposed' && (
+                        <button 
+                          onClick={() => setBookingItem(item)}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gold text-dark text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                        >
+                          <ShieldCheck size={10} />
+                          Book Securely
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
