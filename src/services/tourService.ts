@@ -45,7 +45,7 @@ export async function generateTourContent(location: string, activity: string): P
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash-lite-preview-02-05",
       contents: prompt
     });
     
