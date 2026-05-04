@@ -5,9 +5,9 @@ let aiInstance: GoogleGenAI | null = null;
 
 function getAiClient() {
   if (!aiInstance) {
-    const apiKey = process.env.GEMINI_API_KEY_DEV;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "undefined") {
-      throw new Error("GEMINI_API_KEY_DEV_MISSING");
+      throw new Error("GEMINI_API_KEY_MISSING");
     }
     aiInstance = new GoogleGenAI({ apiKey });
   }
@@ -48,8 +48,8 @@ export async function chatWithOdyAi(messages: Message[]) {
     return response.text || "I apologize, but I am unable to process that request right now. How else can I assist your expedition?";
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    if (error.message === "GEMINI_API_KEY_DEV_MISSING") {
-      return "### OdyAi Offline\n\nI am unable to connect to the Odyssey intelligence network because the **GEMINI_API_KEY_DEV** environment variable is missing or invalid.";
+    if (error.message === "GEMINI_API_KEY_MISSING") {
+      return "### OdyAi Offline\n\nI am unable to connect to the Odyssey intelligence network because the **GEMINI_API_KEY** environment variable is missing or invalid.";
     }
     return "The Odyssey network is experiencing minor turbulence. Please try again or visit the Emergency Hub for immediate assistance.";
   }
