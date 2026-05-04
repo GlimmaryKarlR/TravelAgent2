@@ -260,7 +260,7 @@ export default function ItineraryHub({
               <h1 className="font-serif italic text-4xl font-bold mb-1 tracking-tight text-white">{latestTrip.destination}</h1>
               <div className="flex flex-wrap items-center gap-4">
                 <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">
-                  {latestTrip.dates || 'Active Expedition'} • Status: {latestTrip.status}
+                  {latestTrip.dates || 'Active Expedition'} • {latestTrip.travelers || 1} {latestTrip.travelers === 1 ? 'Traveler' : 'Travelers'} • Status: {latestTrip.status}
                 </p>
                 {selectedPackage && (
                   <motion.div 

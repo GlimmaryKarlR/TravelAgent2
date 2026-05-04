@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin, Banknote, DollarSign, Globe as GlobeIcon } from 'lucide-react';
+import { Plane, Home, Activity, CheckCircle2, ChevronRight, Sparkles, Clock, MapPin, Banknote, DollarSign, Globe as GlobeIcon, Users, AlertCircle } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { chatWithOdyAi } from '../lib/gemini';
@@ -15,19 +15,38 @@ interface OnboardingProps {
 }
 
 export default function NewTripOnboarding({ user, initialData, onComplete, onCancel }: OnboardingProps) {
-  const [step, setStep] = useState(initialData ? 5 : 1);
+  const [step, setStep] = useState(initialData ? 6 : 1);
   const [data, setData] = useState({
     destination: initialData?.destination || '',
     accommodation: initialData?.title || '',
     activity: initialData?.vibe || '',
     dates: '',
-    budget: 3
+    budget: 3,
+    departureLocation: 'Current Location',
+    travelers: 1
   });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
+  const [coords, setCoords] = useState<{lat: number, lng: number} | null>(null);
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoords({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("GPS Detection failed:", error);
+        }
+      );
+    }
+  }, []);
 
   const handleNext = () => {
-    if (step < 5) setStep(step + 1);
+    if (step < 6) setStep(step + 1);
     else handleSubmit();
   };
 
@@ -51,6 +70,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
 
     try {
       const budgetLabel = ["Budget-Conscious", "Comfort", "Premium", "Luxury", "Odyssey Tier"][data.budget - 1];
+      const departureInfo = coords ? `Latitude: ${coords.lat}, Longitude: ${coords.lng}` : data.departureLocation;
       
       // Calculate duration from dates string if possible
       let dayCount = 4; // Default
@@ -71,12 +91,18 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         }
       }
 
-      const prompt = `Act as OdyAi, the elite expedition architect. Design a sophisticated expedition briefing for a traveler going to ${data.destination} (${data.dates || 'Flexible Dates'}).
+      const prompt = `Act as OdyAi, the elite expedition architect. Design a sophisticated expedition briefing for ${data.travelers} traveler(s) going to ${data.destination} (${data.dates || 'Flexible Dates'}).
       Budget Strategy: ${budgetLabel} (${data.budget}/5).
       Architectural Focus: ${data.accommodation}. 
       Expedition Goals: ${data.activity}. 
+      Resident Departure Point: ${departureInfo}
+      Traveler Count: ${data.travelers}
       
-      CRITICAL: Use your integrated Google Search tool to find REAL current flight options and hotel availability for ${data.destination} during ${data.dates}.
+      CRITICAL: Use your integrated Google Search tool to find REAL current flight options and hotel availability. 
+      Departing from: ${departureInfo}. 
+      Destination: ${data.destination}. 
+      Dates: ${data.dates}.
+      Travelers: ${data.travelers}.
       
       IMPORTANT: You MUST generate a daily itinerary for EXACTLY ${dayCount} days. 
       The expedition duration is ${dayCount} days based on the resident's selection: ${data.dates || 'Flexible Window'}.
@@ -150,6 +176,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
         activities: [data.activity],
         dates: data.dates || 'Flexible Window',
         budget: data.budget,
+        travelers: data.travelers,
         intelligenceReport, 
         status: 'active',
         createdAt: new Date().toISOString()
@@ -179,6 +206,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
 
   const steps = [
     { title: "Where to?", icon: GlobeIcon, key: 'destination', placeholder: 'Select via globe or type...', type: 'destination' },
+    { title: "Travelers", icon: Users, key: 'travelers', placeholder: '1', type: 'number' },
     { title: "Spend Level", icon: Banknote, key: 'budget', type: 'budget' },
     { title: "When to travel?", icon: Clock, key: 'dates', type: 'dates' },
     { title: "Where to stay?", icon: Home, key: 'accommodation', placeholder: 'Elite Boutique, Aman, Private Villa...', type: 'text' },
@@ -211,7 +239,7 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
       <header className="p-8 flex justify-between items-center relative z-20">
         <button onClick={onCancel} className="text-[10px] uppercase font-bold text-white/40 tracking-widest hover:text-white transition-colors">Cancel</button>
         <div className="flex gap-2">
-          {[1, 2, 3, 4, 5].map(i => (
+          {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className={`h-1 w-6 rounded-full transition-all duration-500 ${i <= step ? 'bg-gold shadow-[0_0_10px_rgba(212,175,55,0.5)]' : 'bg-white/10'}`} />
           ))}
         </div>
@@ -245,6 +273,12 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                       placeholder={current.placeholder}
                       className="w-full bg-transparent border-b-2 border-white/10 py-4 text-2xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5 uppercase tracking-widest"
                     />
+                    {coords && (
+                      <div className="flex items-center justify-center gap-2 text-[8px] text-green-500/60 font-black uppercase tracking-[0.2em] animate-pulse">
+                        <MapPin size={10} />
+                        Departure Protocol: GPS Locked
+                      </div>
+                    )}
                     <div className="flex flex-wrap justify-center gap-2">
                       {['Tokyo', 'Paris', 'New York', 'Dubai', 'Sydney'].map(city => (
                         <button 
@@ -292,6 +326,30 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                     Strategy: {["Economic Efficiency", "Standard Luxury", "Premium Selection", "Top-Tier Opulence", "Cost-No-Object"][data.budget - 1]}
                   </p>
                 </div>
+              ) : current.type === 'number' ? (
+                <div className="min-h-[440px] flex flex-col items-center justify-center space-y-6">
+                  <input 
+                    autoFocus
+                    type="number"
+                    min="1"
+                    value={(data as any)[current.key]}
+                    onChange={(e) => setData({ ...data, [current.key]: parseInt(e.target.value) || 0 })}
+                    className="w-full max-w-[200px] bg-transparent border-b-2 border-white/10 py-6 text-6xl font-light text-center focus:border-gold outline-none transition-all placeholder:text-white/5"
+                  />
+                  {data.travelers > 99 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 glass-panel border-amber-500/30 bg-amber-500/5 flex items-center gap-3 max-w-md"
+                    >
+                      <AlertCircle className="text-amber-500 shrink-0" size={20} />
+                      <p className="text-[10px] text-amber-200/80 uppercase font-black tracking-widest leading-relaxed">
+                        Excessive Load Detected. Large-group expeditions require custom coordination. Please contact our 
+                        <span className="text-gold ml-1 cursor-pointer hover:underline">Customer Intelligence Hub</span>.
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
               ) : (
                 <div className="min-h-[440px] flex items-center">
                   <input 
@@ -316,10 +374,10 @@ export default function NewTripOnboarding({ user, initialData, onComplete, onCan
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 onClick={handleNext}
-                disabled={(!(data as any)[current.key] && current.type !== 'budget') || isLoading}
+                disabled={(!(data as any)[current.key] && current.type !== 'budget' && current.type !== 'number') || (current.type === 'number' && (data.travelers < 1 || data.travelers > 99)) || isLoading}
                 className="w-full py-5 bg-white text-dark rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-98 hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 transition-all disabled:opacity-20 disabled:translate-y-0"
               >
-                {isLoading ? 'Booking Intelligence...' : step === 5 ? 'Finalize Itinerary' : 'Next'}
+                {isLoading ? 'Booking Intelligence...' : step === 6 ? 'Finalize Itinerary' : 'Next'}
                 {!isLoading && <ChevronRight size={16} />}
               </motion.button>
             )}
